@@ -3,9 +3,8 @@ Optimizing biological sequencing data organization for a better compression effi
 
 ## Todo
 Côté architecture du code
-- Implémenter un décorateur permettant le profiling de fonctions python dont CPU, exec_time, RAM usage mais également vitesse de compression des données par gzip une fois fini.
-- Décorateur pour la visualisation
-- Eventuellement un logger ?
+- fonction pour la visualisation (graph)
+- Eventuellement un fichier de logs des tests (type .csv) prenant l'output du logger
 
 Stratégies
 - Fonction baseline de sorting (à trouver) pour comparer le reste
