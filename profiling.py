@@ -23,7 +23,7 @@ def monitor(func):
         logs['mem_percent'].append(p.memory_percent(memtype="rss")) # (total memory usage, percent of memory used)
         psutil.virtual_memory()
         time.sleep(0.01)
-    logs['exec_time'] = time.time() - p.create_time() #.strftime("%Y-%m-%d %H:%M:%S")
+    logs['exec_time'] = time.time() - p.create_time()
 
     worker_process.join()
     return logs
