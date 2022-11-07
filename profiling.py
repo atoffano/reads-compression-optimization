@@ -28,7 +28,31 @@ def monitor(func):
     worker_process.join()
     return logs
 
+def monitor_gzip(file):
+    logs = {}
+    worker_process = subprocess.Popen(["gzip", "-f", "-k", file])
+    print(worker_process.pid)
+    p = psutil.Process(worker_process.pid)
+
+    # log cpu usage of `worker_process` every 10 ms
+    logs = {
+        'cpu': [],
+        'mem_usage': [],
+        'mem_percent': [],
+        'disk_usage': [],
+    }
+    while worker_process.poll() is not None:
+        logs['cpu'].append(p.cpu_percent()) # % cpu usage
+        logs['mem_usage'].append(p.memory_full_info().uss)
+        logs['mem_percent'].append(p.memory_percent(memtype="rss")) # (total memory usage, percent of memory used)
+        psutil.virtual_memory()
+        time.sleep(0.01)
+    logs['exec_time'] = time.time() - p.create_time()
+    worker_process.wait()
+    print('Gzip logs: ', logs)
+    return logs
 
 if __name__ == "__main__":
     log = monitor(long_time)
+    monitor_gzip('data/ecoli_100Kb_reads_80x.fasta')
     print(log)
