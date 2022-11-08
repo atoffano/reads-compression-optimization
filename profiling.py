@@ -21,6 +21,7 @@ def monitor(func):
         logs['cpu'].append(p.cpu_percent()) # % cpu usage
         logs['mem_usage'].append(p.memory_full_info().uss)
         logs['mem_percent'].append(p.memory_percent(memtype="rss")) # (total memory usage, percent of memory used)
+        logs['disk_usage'].append(psutil.disk_io_counters())
         psutil.virtual_memory()
         time.sleep(0.01)
     logs['exec_time'] = time.time() - p.create_time()
@@ -31,9 +32,8 @@ def monitor(func):
 def monitor_gzip(file):
     logs = {}
     worker_process = subprocess.Popen(["gzip", "-f", "-k", file])
-    print(worker_process.pid)
     p = psutil.Process(worker_process.pid)
-
+    print(p)
     # log cpu usage of `worker_process` every 10 ms
     logs = {
         'cpu': [],
@@ -41,10 +41,12 @@ def monitor_gzip(file):
         'mem_percent': [],
         'disk_usage': [],
     }
-    while worker_process.poll() is not None:
+    print(worker_process)
+    while worker_process.poll() is None:
         logs['cpu'].append(p.cpu_percent()) # % cpu usage
         logs['mem_usage'].append(p.memory_full_info().uss)
         logs['mem_percent'].append(p.memory_percent(memtype="rss")) # (total memory usage, percent of memory used)
+        logs['disk_usage'].append(psutil.disk_io_counters())
         psutil.virtual_memory()
         time.sleep(0.01)
     logs['exec_time'] = time.time() - p.create_time()
@@ -54,5 +56,7 @@ def monitor_gzip(file):
 
 if __name__ == "__main__":
     log = monitor(long_time)
-    monitor_gzip('data/ecoli_100Kb_reads_80x.fasta')
     print(log)
+
+    print('bip')
+    monitor_gzip('data/ecoli_100Kb_reads_80x.fasta')
