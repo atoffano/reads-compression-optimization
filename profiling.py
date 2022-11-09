@@ -1,12 +1,12 @@
-import argparse, os, sys
 import subprocess
-import datetime, time
+import time
 import psutil
 import multiprocessing as mp  
 from comp import long_time
+import os
 
 def monitor(func):
-    worker_process = mp.Process(target=func, args=(10,))
+    worker_process = mp.Process(target=func)
     worker_process.start()
     p = psutil.Process(worker_process.pid)
 
@@ -55,8 +55,7 @@ def monitor_gzip(file):
     return logs
 
 if __name__ == "__main__":
-    log = monitor(long_time)
+    log = monitor(long_time(5))
     print(log)
-
-    print('bip')
     monitor_gzip('data/ecoli_100Kb_reads_80x.fasta')
+    os.remove('data/ecoli_100Kb_reads_80x.fasta.gz')
