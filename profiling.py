@@ -55,6 +55,8 @@ def monitor_gzip(file):
     logs['exec_time'] = time.time() - p.create_time()
     logs['compression_ratio'] = os.path.getsize(file) / os.path.getsize(file + ".gz")
     worker_process.wait()
+    os.remove(f'{file}.gz')
+
     return logs
 
 def long_time(n):
@@ -65,4 +67,3 @@ def long_time(n):
 if __name__ == "__main__":
     print('function logs: ', monitor(long_time(500)))
     print('Gzip logs: ', monitor_gzip('data/ecoli_100Kb_reads_80x.fasta'))
-    os.remove('data/ecoli_100Kb_reads_80x.fasta.gz')
