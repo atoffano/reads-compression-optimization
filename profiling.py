@@ -42,7 +42,6 @@ def monitor_gzip(file):
         'mem_percent': [],
         'disk_usage': [],
     }
-    print(worker_process)
     while worker_process.poll() is None:
         try:
             logs['cpu'].append(p.cpu_percent()) # % cpu usage
@@ -54,6 +53,7 @@ def monitor_gzip(file):
         except:
             pass
     logs['exec_time'] = time.time() - p.create_time()
+    logs['compression_ratio'] = os.path.getsize(file) / os.path.getsize(file + ".gz")
     worker_process.wait()
     return logs
 
