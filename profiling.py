@@ -3,6 +3,7 @@ import time
 import psutil
 import multiprocessing as mp  
 import os
+import stat
 
 def monitor(func):
     worker_process = mp.Process(target=func)
@@ -31,14 +32,24 @@ def monitor(func):
     worker_process.join()
     return logs
 
-def monitor_gzip(file):
-    # data\ecoli_100Kb_reads_10x.fasta_comp 1020000
-    # data\ecoli_100Kb_reads_120x.fasta_comp 12240000
-    # data\ecoli_100Kb_reads_20x.fasta_comp 2040000
-    # data\ecoli_100Kb_reads_40x.fasta_comp 4080000
-    # data\ecoli_100Kb_reads_5x.fasta_comp 510000
-    # data\ecoli_100Kb_reads_80x.fasta_comp 8160000
-    unsorted_comp_size =  {"data/ecoli_100Kb_reads_10x.fasta" : 1020000, "data/ecoli_100Kb_reads_120x.fasta" : 12240000, "data/ecoli_100Kb_reads_20x.fasta" : 2040000, "data/ecoli_100Kb_reads_40x.fasta" : 4080000, "data/ecoli_100Kb_reads_5x.fasta" : 510000, "data/ecoli_100Kb_reads_80x.fasta" : 8160000}
+def monitor_gzip(file, ori_file):
+
+    # data/headerless\ecoli_100Kb_reads_10x.fasta.headerless.gz 292244
+    # data/headerless\ecoli_100Kb_reads_120x.fasta.headerless.gz 3508076
+    # data/headerless\ecoli_100Kb_reads_20x.fasta.headerless.gz 586108
+    # data/headerless\ecoli_100Kb_reads_40x.fasta.headerless.gz 1170066
+    # data/headerless\ecoli_100Kb_reads_5x.fasta.headerless.gz 146953
+    # data/headerless\ecoli_100Kb_reads_80x.fasta.headerless.gz 2342520
+
+    unsorted_comp_size =  {
+    'data/headerless/ecoli_100Kb_reads_10x.fasta.headerless.gz' : 292244,
+    'data/headerless/ecoli_100Kb_reads_120x.fasta.headerless.gz' : 3508076,
+    'data/headerless/ecoli_100Kb_reads_20x.fasta.headerless.gz' : 586108,
+    'data/headerless/ecoli_100Kb_reads_40x.fasta.headerless.gz' : 1170066,
+    'data/headerless/ecoli_100Kb_reads_5x.fasta.headerless.gz' : 146953,
+    'data/headerless/ecoli_100Kb_reads_80x.fasta.headerless.gz' : 2342520
+    }
+
     logs = {}
     worker_process = subprocess.Popen(["gzip", "-f", "-k", file])
     p = psutil.Process(worker_process.pid)
@@ -60,9 +71,10 @@ def monitor_gzip(file):
         except:
             pass
     logs['exec_time'] = time.time() - p.create_time()
-    logs['compression_ratio'] = unsorted_comp_size[file] / os.path.getsize(file.replace('data/', 'data/ori/') + ".gz")
+    
+    logs['compression_ratio'] =  os.path.getsize(file + ".gz") / unsorted_comp_size[ori_file]
     worker_process.wait()
-    os.remove(f'{file}.gz')
+    # os.remove(f'{file}.gz')
 
     return logs
 
@@ -73,4 +85,4 @@ def long_time(n):
 
 if __name__ == "__main__":
     print('function logs: ', monitor(long_time(500)))
-    print('Gzip logs: ', monitor_gzip('data/ecoli_100Kb_reads_80x.fasta'))
+    print('Gzip logs: ', monitor_gzip('data/ecoli_100Kb_reads_80x.fasta', 'data/headerless/ecoli_100Kb_reads_80x.fasta.headerless.gz'))
