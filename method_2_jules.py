@@ -38,16 +38,16 @@ def get_kmer_dict(kmer: str, file: str):
             index = random.randint(0, len(new_kmer_read) - len(kmer))
             new_kmer = new_kmer_read[index : index + len(kmer)]
 
-            with open("method_3_temp", "w") as wipe:
+            with open("method_2_temp", "w") as wipe:
                 wipe.write("")
-            with open("method_3_temp", "a") as file:
+            with open("method_2_temp", "a") as file:
                 for read in kmer_dict[kmer]["0"]:
                     file.write(read + "\n")
 
             last_zero = kmer_dict[kmer]["0"]
             del kmer_dict[kmer]["0"]
 
-        file = "method_3_temp"
+        file = "method_2_temp"
         kmer = new_kmer
 
     if not breaking:
@@ -64,9 +64,9 @@ def write_outfile():
 
     kmer_dict = get_kmer_dict(kmer="ATGCGC", file="data/ecoli_100Kb_reads_120x.fasta")
 
-    with open("data/method_3_out_120.fasta", "w") as wipe:
+    with open("data/method_2_out_120.fasta", "w") as wipe:
         wipe.write("")
-    with open("data/method_3_out_120.fasta", "a") as file:
+    with open("data/method_2_out_120.fasta", "a") as file:
         for kmer in kmer_dict:
             for count in kmer_dict[kmer]:
                 for read in kmer_dict[kmer][count]:
