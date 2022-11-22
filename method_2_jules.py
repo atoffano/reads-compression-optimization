@@ -5,7 +5,6 @@ from typing import Generator
 
 from utils import fasta_reader, get_sequence
 
-# géré le cas ou l'utilisateur donne un kmer trop long, un size négatif, un size trop long
 # trouvé une méthode pour que la sélection des kmers soit smart et pas aléatoire
 
 
@@ -116,6 +115,32 @@ def write_outfile(in_file: str, out_file: str, kmer: str = "", size: str = "") -
                     file.write(read + "\n")
 
 
+def erro_handling(input_file: Path, kmer: str, size: int) -> None:
+    """Handle error regarding the kmer or size given in arguments
+
+    Args:
+        input_file (Path): input file
+        kmer (str): given kmer
+        size (int): given size
+
+    Raises:
+        ValueError: kmer size check
+        ValueError: positive and non-null size check
+        ValueError: size limit check
+    """
+    reader: Generator = fasta_reader(filename=input_file)
+    read = next(reader)
+
+    if kmer != "random" and len(kmer) >= len(get_sequence(read)):
+        raise ValueError("Kmer cannot be longer than reads size")
+
+    if size <= 0:
+        raise ValueError("Size cannot be equal or lesser than 0")
+
+    if size > len(get_sequence(read)):
+        raise ValueError("Size cannot be greater than reads size")
+
+
 if __name__ == "__main__":
     parser = ArgumentParser(
         prog="method_2_jules.py",
@@ -136,10 +161,12 @@ if __name__ == "__main__":
     arg_log_kmer: str = "random" if args.kmer == None else args.kmer
     arg_log_size: int = args.size_kmer if args.kmer == None else len(args.kmer)
 
+    erro_handling(input_file=args.input, kmer=arg_log_kmer, size=arg_log_size)
+
     print(
         f"Parameters are :\n\tFirst kmer : {arg_log_kmer}\n\tKmer size : {arg_log_size}"
     )
 
     write_outfile(
-        in_file=args.input, out_file=args.output, kmer=args.kmer, size=args.size_kmer
+        in_file=args.input, out_file=args.output, kmer=arg_log_kmer, size=arg_log_size
     )
