@@ -72,7 +72,7 @@ def monitor_gzip(file, ori_file):
             pass
     logs['exec_time'] = time.time() - p.create_time()
     
-    logs['compression_ratio'] =  os.path.getsize(file + ".gz") / unsorted_comp_size[ori_file]
+    logs['compression_ratio'] =  unsorted_comp_size[ori_file] / os.path.getsize(file + ".gz")
     worker_process.wait()
     # os.remove(f'{file}.gz')
 
