@@ -53,9 +53,9 @@ def monitor(func, input_file, compare_to):
 
 if __name__ == "__main__":
     print(monitor(
-        func=pca_sort.sort_by_pca('data/ecoli_100Kb_reads_80x.fasta', "out_x.fasta", 50000),
+        func=pca_sort.sort_by_pca('data/ecoli_100Kb_reads_5x.fasta', "out_x.fasta", 5000),
         input_file='out_x.fasta',
-        compare_to='data/headerless/ecoli_100Kb_reads_80x.fasta.headerless.gz')
+        compare_to='data/headerless/ecoli_100Kb_reads_5x.fasta.headerless.gz')
         )
     os.remove('out_x.fasta')
     os.remove('out_x.fasta.gz')

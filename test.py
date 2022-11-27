@@ -23,7 +23,8 @@ if __name__ == '__main__':
     ]
     log = {}
     for file in files:
-        print(f'{file.replace("/", "/headerless/")}.headerless.gz')
+        print('file= '+file)
+        print('compare_to= ' + f'{file.replace("/", "/headerless/")}.headerless.gz')
         for chunk_size in range(40000, 80000, 40000):
             log_monitor_func = monitor(
                 func=pca_sort.sort_by_pca(file, "out_x.fasta", chunk_size),
@@ -31,7 +32,6 @@ if __name__ == '__main__':
                 compare_to=f'{file.replace("/", "/headerless/")}.headerless.gz'
                 )
             log[(file, chunk_size)] = log_monitor_func
-            print(log)
-                # os.remove('out_x.fasta')
-                # os.remove('out_x.fasta.gz')
-            break
+            os.remove('out_x.fasta')
+            os.remove('out_x.fasta.gz')
+    

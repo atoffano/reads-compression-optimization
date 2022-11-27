@@ -5,6 +5,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn import manifold
 from utils import *
 from profiling import monitor
+import os
 
 def enum_kmers(k):
     if k<0:
@@ -44,6 +45,9 @@ def sort_by_pca(infile, outfile, chunk_size):
         data.append(sequence)
         if i == chunk_size:
             i, data, matrix = pca_sort(i, matrix, data, chunk_size, kmers, outfile)
+    if not os.path.exists(outfile):
+        print('chunk_size of size ' + str(chunk_size) + 'is larger than the number of reads. Using chunk_size equal to the nb of reads ('+str(i)+') instead')
+        i, data, matrix = pca_sort(i, matrix, data, chunk_size, kmers, outfile)
 
 
 def pca_sort(i, matrix, data, chunk_size, kmers, outfile):
