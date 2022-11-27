@@ -1,8 +1,4 @@
 from pathlib import Path
-from profiling import monitor, monitor_gzip
-import os
-import random
-import glob
 
 def fasta_reader(filename: Path) -> str:
     """Generator yielding read sequence with it label
