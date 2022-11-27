@@ -2,8 +2,7 @@ from typing import Tuple, Generator
 from pathlib import Path
 from argparse import ArgumentParser
 
-from profiling import monitor
-from utils import fasta_reader, get_label, get_sequence
+from utils import *
 
 
 def frequence_classification(input_file: Path, freq_cut: int) -> Tuple[dict, list]:

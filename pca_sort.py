@@ -32,6 +32,17 @@ def distribution(list):
         i+=1
     return res
 
+def encode_kmers(kmers, sequence):
+    return [1 if kmer in sequence else 0 for kmer in kmers]
+
+def encode_to_kmers(kmers, sequence):
+    encoding = []
+    for i in range(len(sequence) - len(kmers[0]) + 1):
+        kmer = sequence[i:i+len(kmers[0])]
+        if kmer in kmers:
+            encoding.append(kmers.index(kmer))
+    return encoding
+
 def sort_by_pca(infile, outfile, chunk_size):
     #kmer embedding sorting
     kmers = enum_kmers(3)
@@ -40,7 +51,7 @@ def sort_by_pca(infile, outfile, chunk_size):
     matrix = np.zeros((chunk_size, len(kmers)), dtype=int)
     for read_nb, read in enumerate(fasta_reader(infile)):
         sequence = get_sequence(read)
-        matrix[i] = [1 if kmer in sequence else 0 for kmer in kmers]
+        matrix[i] = encode_to_kmers(kmers, sequence)
         i += 1
         data.append(sequence)
         if i == chunk_size:
@@ -65,29 +76,10 @@ def pca_sort(i, matrix, data, chunk_size, kmers, outfile):
     return i, data, matrix
 
 if __name__ == "__main__":
-    pass
-    # print('f')
-    # # print(monitor(sort_by_pca("data/ecoli_100Kb_reads_80x.fasta", "out_80x.fasta", 45000)))
-    # # print(monitor_gzip('out_80x.fasta', 'data/headerless/ecoli_100Kb_reads_80x.fasta.headerless.gz'))
-    # # os.remove('out.fasta')
-    # # os.remove('out.fasta.gz')
-    # files = [
-    #     'data/ecoli_100Kb_reads_5x.fasta',
-    #     'data/ecoli_100Kb_reads_10x.fasta',
-    #     'data/ecoli_100Kb_reads_20x.fasta',
-    #     'data/ecoli_100Kb_reads_40x.fasta',
-    #     'data/ecoli_100Kb_reads_80x.fasta',
-    #     'data/ecoli_100Kb_reads_120x.fasta'
-    # ]
-
-    # log = {}
-    # for file in files:
-    #     for chunk_size in range(40000, 80000, 40000):
-    #         log_monitor_func = monitor(sort_by_pca(file, "out_x.fasta", chunk_size))
-    #         log_monitor_gzip = monitor_gzip('out_x.fasta', f'{file.replace("/", "/headerless/")}.headerless.gz')
-    #         log[(file, chunk_size)] = [log_monitor_func, log_monitor_gzip]
-    #         print(log)
-    #         os.remove('out_x.fasta')
-    #         os.remove('out_x.fasta.gz')
-    #         break
- 
+    print(monitor(
+        func=sort_by_pca('data/ecoli_100Kb_reads_5x.fasta', "out_x.fasta", 5000),
+        input_file='out_x.fasta',
+        compare_to='data/headerless/ecoli_100Kb_reads_5x.fasta.headerless.gz')
+        )
+    os.remove('out_x.fasta')
+    os.remove('out_x.fasta.gz')
