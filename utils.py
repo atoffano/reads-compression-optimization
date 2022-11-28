@@ -1,10 +1,12 @@
 from pathlib import Path
-from io import TextIOWrapper
+import time
+import psutil
+import multiprocessing as mp
+import os, gzip
+import shutil
+import pca_sort
 import subprocess
-from profiling import monitor, monitor_gzip
-import os
-import random
-import glob
+from io import TextIOWrapper
 
 
 def format_output(process):
@@ -109,119 +111,64 @@ def remove_headers(filein, fileout):
                 f2.write(line)
 
 
-############################################################################################################
-# Cosine similarity sorting
-############################################################################################################
+def monitor(func, input_file, compare_to):
 
+    unsorted_comp_size = {
+        "data/headerless/ecoli_100Kb_reads_10x.fasta.headerless.gz": 292244,
+        "data/headerless/ecoli_100Kb_reads_120x.fasta.headerless.gz": 3508076,
+        "data/headerless/ecoli_100Kb_reads_20x.fasta.headerless.gz": 586108,
+        "data/headerless/ecoli_100Kb_reads_40x.fasta.headerless.gz": 1170066,
+        "data/headerless/ecoli_100Kb_reads_5x.fasta.headerless.gz": 146953,
+        "data/headerless/ecoli_100Kb_reads_80x.fasta.headerless.gz": 2342520,
+    }
 
-def convert_to_int(str):
-    match = {"A": 0, "T": 1, "C": 2, "G": 3}
-    for i in range(len(str)):
-        str[i] = match[str[i]]
-    return str
+    worker_process = mp.Process(target=func)
+    worker_process.start()
+    p = psutil.Process(worker_process.pid)
 
+    # log cpu usage of `worker_process` every 10 ms
+    logs = {
+        "cpu": [],
+        "mem_usage": [],
+        "mem_percent": [],
+        "disk_usage": [],
+    }
+    while worker_process.is_alive():
+        try:
+            logs["cpu"].append(p.cpu_percent())  # % cpu usage
+            logs["mem_usage"].append(p.memory_full_info().uss)
+            logs["mem_percent"].append(
+                p.memory_percent(memtype="rss")
+            )  # (total memory usage, percent of memory used)
+            # logs['disk_usage'].append(psutil.disk_io_counters())
+            psutil.virtual_memory()
+            time.sleep(0.01)
+        except:
+            pass
+    logs["exec_time"] = time.time() - p.create_time()
 
-############################################################################################################
-# Kmer sorting
-############################################################################################################
+    p.wait()
+    worker_process.join()
 
-
-def kmer_sorting(filename: Path, k: int) -> None:
-    """Sort reads by kmer
-
-    Args:
-        filename (Path): path to fasta file
-        k (int): kmer size
-    """
-    kmer_dict: dict = {}
-
-
-def nb_kmers(k):
-    if k < 0:
-        raise ValueError()
-    elif k == 0:
-        return 0
-    return 4**k
-
-
-def enum_kmers(k):
-    if k < 0:
-        raise ValueError()
-    elif k == 0:
-        return []
-    list = [""]
-    i = 0
-    while i < k:
-        list = distribution(list)
-        i += 1
-    return list
-
-
-def distribution(list):
-    adn = ["A", "T", "C", "G"]
-    res = []
-    i = 0
-    while i < len(list):
-        j = 0
-        while j < 4:
-            sol = list[i] + adn[j]
-            res.append(sol)
-            j += 1
-        i += 1
-    return res
-
-
-def single_kmer_sorting(file, kmer):
-    outleft = []
-    outfile = f"{kmer}_1.fasta"
-    with open(outfile, "a") as f:
-        for read in fasta_reader(file):
-            sequence = get_sequence(read)
-            if kmer in sequence:
-                f.write(sequence + "\n")
-            else:
-                outleft.append(sequence)
-        for j in outleft:
-            f.write(j + "\n")
-    return outfile
-
-
-def multiple_kmer_sorting(file):
-    kmers = enum_kmers(3)
-    kmer = random.choice(kmers)
-    outfile = single_kmer_sorting(file, kmer)
-    filelist = [outfile]
-    for i in range(4):
-        kmer = random.choice(kmers)
-        file = f"{kmer}_{i+2}.fasta"
-        outleft = []
-        cnt, cnt1 = 0, 0
-        with open(file, "a") as f:
-            for sequence in fasta_reader_headerless(outfile):
-                if kmer in sequence:
-                    cnt = cnt + 1
-                    f.write(sequence + "\n")
-                else:
-                    cnt1 = cnt1 + 1
-                    outleft.append(sequence)
-            for k in outleft:
-                f.write(k + "\n")
-        filelist.append(file)
-    print(
-        monitor_gzip(file, "data/headerless/ecoli_100Kb_reads_80x.fasta.headerless.gz")
+    with open(input_file, "rb") as f_in:
+        with gzip.open(f"{input_file.replace('data/', '')}.gz", "wb") as f_out:
+            shutil.copyfileobj(f_in, f_out)
+    logs["compression_ratio"] = unsorted_comp_size[compare_to] / os.path.getsize(
+        f"{input_file}.gz"
     )
-    for ent in filelist:
-        print(ent)
-        os.remove(ent)
-    os.remove(filelist[-1] + ".gz")
-    print(file)
+
+    return logs
 
 
 if __name__ == "__main__":
-    # print(monitor(single_kmer_sorting('data/ecoli_100Kb_reads_80x.fasta', 'out80x.fasta', 'ATCG')))
-    # print(monitor_gzip('out80x.fasta', 'data/headerless/ecoli_100Kb_reads_80x.fasta.headerless.gz'))
-    # os.remove('out80x.fasta')
-    # os.remove('out80x.fasta.gz')
-
-    print(monitor(multiple_kmer_sorting("data/ecoli_100Kb_reads_80x.fasta")))
-    # print(monitor_gzip('out80x.fasta', 'data/headerless/ecoli_100Kb_reads_80x.fasta.headerless.gz'))
+    print(
+        monitor(
+            func=pca_sort.sort_by_pca(
+                "data/ecoli_100Kb_reads_5x.fasta", "out_x.fasta", 5000
+            ),
+            input_file="out_x.fasta",
+            compare_to="data/headerless/ecoli_100Kb_reads_5x.fasta.headerless.gz",
+        )
+    )
+    os.remove("out_x.fasta")
+    os.remove("out_x.fasta.gz")
