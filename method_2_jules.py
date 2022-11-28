@@ -1,9 +1,11 @@
 import random
+import subprocess
 from pathlib import Path
 from argparse import ArgumentParser
 from typing import Generator
 
-from utils import fasta_reader, get_sequence
+from utils import fasta_reader, get_sequence, gzip_in_and_out
+from profiling import monitor, monitor_gzip
 
 # trouvé une méthode pour que la sélection des kmers soit smart et pas aléatoire
 
@@ -141,7 +143,7 @@ def erro_handling(input_file: Path, kmer: str, size: int) -> None:
         raise ValueError("Size cannot be greater than reads size")
 
 
-if __name__ == "__main__":
+def main():
     parser = ArgumentParser(
         prog="method_2_jules.py",
         description="",
@@ -155,18 +157,44 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    # Parses argument
     if args.kmer == None and args.size_kmer == None:
-        args.size_kmer == "6"
+        arg_log_size = 6
+    else:
+        arg_log_size: int = len(args.kmer) if args.kmer == None else args.size_kmer
 
     arg_log_kmer: str = "random" if args.kmer == None else args.kmer
-    arg_log_size: int = args.size_kmer if args.kmer == None else len(args.kmer)
 
+    # Check for errors
     erro_handling(input_file=args.input, kmer=arg_log_kmer, size=arg_log_size)
 
+    # Print parameters
     print(
-        f"Parameters are :\n\tFirst kmer : {arg_log_kmer}\n\tKmer size : {arg_log_size}"
+        f"Parameters are :\n\tFirst kmer : {arg_log_kmer}\n\tKmer size : {arg_log_size}\n"
     )
 
-    write_outfile(
-        in_file=args.input, out_file=args.output, kmer=arg_log_kmer, size=arg_log_size
+    # Reorder and get monitoring values
+    print("reordering...\n")
+    monitoring_values = monitor(
+        write_outfile(
+            in_file=args.input,
+            out_file=args.output,
+            kmer=arg_log_kmer,
+            size=arg_log_size,
+        )
     )
+
+    # Print monitoring values
+    for key in monitoring_values:
+        print(f"{key} : {monitoring_values[key]}")
+
+    # Compress the files
+    base_file = gzip_in_and_out(in_file=args.input, out_file=args.output)
+
+    # Print compression rate
+    monitor_gzip(args.output + ".gz", base_file + ".gz")
+
+
+if __name__ == "__main__":
+
+    main()

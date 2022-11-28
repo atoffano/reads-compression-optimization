@@ -3,7 +3,7 @@ from pathlib import Path
 from argparse import ArgumentParser
 
 from profiling import monitor
-from utils import fasta_reader, get_label, get_sequence
+from utils import fasta_reader, open_wipe_and_add, get_sequence
 
 
 def frequence_classification(input_file: Path, freq_cut: int) -> Tuple[dict, list]:
@@ -70,17 +70,15 @@ def write_outfile(in_file: Path, out_file: Path, freq_cut: Path) -> None:
     freq_dict, sorted_freq_list = frequence_classification(
         input_file=in_file, freq_cut=freq_cut
     )
-    with open(out_file, "w") as wipe:
-        wipe.write("")  # cleaning the file
 
-    with open(out_file, "a") as file:
+    with open_wipe_and_add(filename=out_file) as file:
         # group are write in the file folowing the ordered list
         for key in sorted_freq_list:
             for read in freq_dict[key]:
                 file.write(read + "\n")
 
 
-if __name__ == "__main__":
+def main():
     parser = ArgumentParser(
         prog="method_2_jules.py",
         description="",
@@ -98,3 +96,7 @@ if __name__ == "__main__":
     print(f"Parameters are :\nFrequence cutting : {freq_cut}")
 
     write_outfile(in_file=args.input, out_file=args.output, freq_cut=freq_cut)
+
+
+if __name__ == "__main__":
+    main()
