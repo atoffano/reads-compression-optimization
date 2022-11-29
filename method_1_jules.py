@@ -5,6 +5,8 @@ from argparse import ArgumentParser
 from profiling import monitor
 from utils import fasta_reader, open_wipe_and_add, get_sequence
 
+# sort the reads by overall frequences of ACGT
+
 
 def frequence_classification(input_file: Path, freq_cut: int) -> Tuple[dict, list]:
     """Build a dict with nt frequency as key and list of reads as value, also build and

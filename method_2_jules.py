@@ -3,9 +3,11 @@ import subprocess
 from pathlib import Path
 from argparse import ArgumentParser
 from typing import Generator
-
-from utils import fasta_reader, get_sequence, gzip_in_and_out
+import subprocess
+from utils import fasta_reader, get_sequence, gzip_out, open_wipe_and_add
 from profiling import monitor, monitor_gzip
+
+# sort the reads by kmers findings in it
 
 # trouvé une méthode pour que la sélection des kmers soit smart et pas aléatoire
 
@@ -108,13 +110,11 @@ def write_outfile(in_file: str, out_file: str, kmer: str = "", size: str = "") -
     for kmer in kmer_list:
         sorted_kmer_dict[kmer] = kmer_dict[kmer]
 
-    with open(out_file, "w") as wipe:
-        wipe.write("")
-    with open(out_file, "a") as file:
+    with open_wipe_and_add(out_file) as file:
         for kmer in sorted_kmer_dict:
             for count in sorted_kmer_dict[kmer]:
                 for read in sorted_kmer_dict[kmer][count]:
-                    file.write(read + "\n")
+                    file.write(get_sequence(read) + "\n")
 
 
 def erro_handling(input_file: Path, kmer: str, size: int) -> None:
@@ -143,6 +143,55 @@ def erro_handling(input_file: Path, kmer: str, size: int) -> None:
         raise ValueError("Size cannot be greater than reads size")
 
 
+def launch_method_2(
+    input: Path,
+    output: Path,
+    delete_output: bool = False,
+    kmer: str = "random",
+    size: int = 6,
+) -> dict:
+    """function for launching the method inside a python script
+
+    Args:
+        input (Path): _description_
+        output (Path): _description_
+        delete_output (bool, optional): _description_. Defaults to False.
+        kmer (str, optional): _description_. Defaults to "random".
+        size (int, optional): _description_. Defaults to 6.
+
+    Returns:
+        dict: logs of the operation
+    """
+    erro_handling(input_file=input, kmer=kmer, size=size)
+
+    # Reorder and get monitoring values
+    monitoring_values = monitor(
+        write_outfile(
+            in_file=input,
+            out_file=output,
+            kmer=kmer,
+            size=size,
+        )
+    )
+
+    # Compress the files
+    base_file = "data/ori/" + input.split("data/")[1] + ".gz"
+    out_gz = gzip_out(output)
+
+    # get compression rate
+    monitoring_values["rate"] = monitor_gzip(out_gz, base_file)
+
+    # Delete the file if -d is on
+    if delete_output:
+        bashCommand = f"rm -rf {out_gz}"
+        process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
+        out, error = process.communicate()
+
+    monitoring_values["file"] = input
+    monitoring_values["kmer-size"] = size
+    return monitoring_values
+
+
 def main():
     parser = ArgumentParser(
         prog="method_2_jules.py",
@@ -151,27 +200,19 @@ def main():
     )
 
     parser.add_argument("-i", "--input")
+    parser.add_argument("-d", "--delete_output", default=False)
     parser.add_argument("-o", "--output")
-    parser.add_argument("-k", "--kmer")
-    parser.add_argument("-s", "--size_kmer")
+    parser.add_argument("-k", "--kmer", default="random")
+    parser.add_argument("-s", "--size_kmer", default=6)
 
     args = parser.parse_args()
-
-    # Parses argument
-    if args.kmer == None and args.size_kmer == None:
-        arg_log_size = 6
-    else:
-        arg_log_size: int = len(args.kmer) if args.kmer == None else args.size_kmer
-
-    arg_log_kmer: str = "random" if args.kmer == None else args.kmer
-
+    size = int(args.size_kmer)
+    delete_output = False if args.delete_output == "False" else True
     # Check for errors
-    erro_handling(input_file=args.input, kmer=arg_log_kmer, size=arg_log_size)
+    erro_handling(input_file=args.input, kmer=args.kmer, size=size)
 
     # Print parameters
-    print(
-        f"Parameters are :\n\tFirst kmer : {arg_log_kmer}\n\tKmer size : {arg_log_size}\n"
-    )
+    print(f"Parameters are :\n\tFirst kmer : {args.kmer}\n\tKmer size : {size}\n")
 
     # Reorder and get monitoring values
     print("reordering...\n")
@@ -179,8 +220,8 @@ def main():
         write_outfile(
             in_file=args.input,
             out_file=args.output,
-            kmer=arg_log_kmer,
-            size=arg_log_size,
+            kmer=args.kmer,
+            size=size,
         )
     )
 
@@ -189,10 +230,23 @@ def main():
         print(f"{key} : {monitoring_values[key]}")
 
     # Compress the files
-    base_file = gzip_in_and_out(in_file=args.input, out_file=args.output)
+    base_file = "data/ori/" + args.input.split("data/")[1] + ".gz"
+    out_gz = gzip_out(args.output)
 
     # Print compression rate
-    monitor_gzip(args.output + ".gz", base_file + ".gz")
+    compression_rate = monitor_gzip(out_gz, base_file)
+
+    # Delete the file if -d is on
+    if args.delete_output:
+        bashCommand = f"rm -rf {out_gz}"
+        process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
+        out, error = process.communicate()
+
+    with open_wipe_and_add("log_method2.txt") as file:
+        for key in monitoring_values:
+            file.write(f"{key} : {monitoring_values[key]}\n")
+
+        file.write(f"compression rate : {compression_rate}")
 
 
 if __name__ == "__main__":

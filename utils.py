@@ -16,19 +16,14 @@ def format_output(process):
     print(error if error != None else "")
 
 
-def gzip_in_and_out(in_file, out_file):
-    copied_in_file = "_copy_".join(in_file.split("."))
-    bashCommand = f"/bin/cp {in_file} {copied_in_file}"
+def gzip_out(out_file):
+
+    bashCommand = f"/bin/gzip -f {out_file}"
     process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
+    print("compressing...")
     format_output(process)
 
-    for file in [copied_in_file, out_file]:
-        bashCommand = f"/bin/gzip -f {file}"
-        process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
-        print("compressing...")
-        format_output(process)
-
-    return copied_in_file
+    return out_file + ".gz"
 
 
 def fasta_reader(filename: Path) -> str:

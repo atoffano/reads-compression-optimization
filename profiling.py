@@ -42,8 +42,7 @@ def monitor_gzip(file, ori_file):
     process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
     out, error = process.communicate()
     output = str(out)
-    print("Compresion rate is : " + output[2:-3] if output != "b''" else "")
-    print(error if error != None else "")
+    return output[2:-3] if output != "b''" else ""
 
 
 # def monitor_gzip(file, ori_file):
