@@ -20,7 +20,6 @@ def gzip_out(out_file):
 
     bashCommand = f"/bin/gzip -f {out_file}"
     process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
-    print("compressing...")
     format_output(process)
 
     return out_file + ".gz"

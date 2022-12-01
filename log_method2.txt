@@ -1,6 +1,6 @@
 cpu : [0.0]
-mem_usage : [2060288]
+mem_usage : [2056192]
 mem_percent : [0.0]
 disk_usage : []
-exec_time : 0.23819851875305176
-compression rate : 2.0477
+exec_time : 0.2379744052886963
+compression rate : 2.6200
