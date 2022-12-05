@@ -7,11 +7,12 @@ def argparser():
     Parses arguments from command line
             Parameters:
                     Console arguments
-                    -i / --input (str) : Input path containing files to convert. Handles folder containing multiple datasets.
-                    -m / --method (str): Output path for both standardized and converted formats.
-                    -s / --score (str) : Input format.
-                    -e / --evalset (str) : Output format.
-                    -o / --original (str) : Output format.
+                    -i / --input (str) : Input fasta file with headers
+                    -m / --method (str): Method used to sort reads. Can be 'tsne_sort', 'pca_sort' or 'kmer_sort'
+                    -d / --delete_output (bool) : Delete output file after compression ratio is computed
+                    -c / --compare_to (str) : headerless fasta.gz file to compare to in order to compute compression ratio
+                    -s / --size_kmer (int) : size of kmer used for kmer_sort
+                    -cs / --chunk_size (int) : size of chunk used for tsne_sort and pca_sort
     '''
     parser = ArgumentParser()
 
@@ -51,4 +52,5 @@ def main():
 
 if __name__ == "__main__":
     main()
-    # Utilization example : $ python read_sort.py -i data/ecoli_100Kb_reads_40x.fasta -m pca_sort -cs 40000 -c data/headerless/ecoli_100Kb_reads_40x.fasta.headerless.gz --delete_output True
+    # Usage :
+    # $ python read_sort.py -i data/ecoli_100Kb_reads_40x.fasta -m pca_sort -cs 40000 -c data/headerless/ecoli_100Kb_reads_40x.fasta.headerless.gz --delete_output True
