@@ -29,9 +29,11 @@ def argparser():
     help="")
 
     args = parser.parse_args()
-    main(args)
+    return args
 
-def main(args):
+def main():
+    args = argparser()
+
     if args.method == 'kmer_sort':
         size = int(args.size_kmer)
 
@@ -42,10 +44,11 @@ def main(args):
         pca_sort.sort_by_pca(args.input, "out_x.fasta", int(args.chunk_size))
     
     print(f'Compression ratio : {monitor_gzip("out_x.fasta", args.compare_to)}')
-    
+
     if args.delete_output:
         os.remove('out_x.fasta')
         os.remove('out_x.fasta.gz')
 
 if __name__ == "__main__":
-    argparser()
+    main()
+    # Utilization example : $ python read_sort.py -i data/ecoli_100Kb_reads_40x.fasta -m pca_sort -cs 40000 -c data/headerless/ecoli_100Kb_reads_40x.fasta.headerless.gz --delete_output True
