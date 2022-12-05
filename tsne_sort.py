@@ -79,7 +79,7 @@ def ts_sort(i, matrix, data, chunk_size, kmers, outfile):
     return i, data, matrix
 
 if __name__ == "__main__":
-    sort_by_tsne(infile='data/ecoli_100Kb_reads_80x.fasta', outfile="out_x.fasta", chunk_size=80000)
-    print(monitor_gzip("out_x.fasta", 'data/headerless/ecoli_100Kb_reads_80x.fasta.headerless.gz'))
+    sort_by_tsne(infile='data/ecoli_100Kb_reads_40x.fasta', outfile="out_x.fasta", chunk_size=40000)
+    print(monitor_gzip("out_x.fasta", 'data/headerless/ecoli_100Kb_reads_40x.fasta.headerless.gz'))
 
     

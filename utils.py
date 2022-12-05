@@ -29,8 +29,6 @@ def monitor_gzip(input_file, compare_to):
         with gzip.open(f"{input_file.replace('data/', '')}.gz", 'wb') as f_out:
             shutil.copyfileobj(f_in, f_out)
     ret = unsorted_comp_size[compare_to] / os.path.getsize(f'{input_file}.gz')
-    os.remove('out_x.fasta')
-    os.remove('out_x.fasta.gz')
     return ret
 
 def fasta_reader(filename: Path) -> str:

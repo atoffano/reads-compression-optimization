@@ -42,6 +42,7 @@ def encode_to_kmers(kmers, sequence):
             encoding.append(kmers.index(kmer))
     return encoding
 
+@timer_func
 def sort_by_pca(infile, outfile, chunk_size):
     #kmer embedding sorting
     kmers = enum_kmers(3)

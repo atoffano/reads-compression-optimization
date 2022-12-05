@@ -5,7 +5,6 @@ from pathlib import Path
 from argparse import ArgumentParser
 from typing import Generator
 import subprocess
-from utils import fasta_reader, get_sequence, gzip_out, open_wipe_and_add
 from utils import *
 
 
