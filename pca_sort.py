@@ -58,9 +58,7 @@ def sort_by_pca(infile, outfile, chunk_size):
             i, data, matrix = pc_sort(i, matrix, data, chunk_size, kmers, outfile)
     if i > 0:
         i, data, matrix = pc_sort(i, matrix, data, chunk_size, kmers, outfile)
-    if not os.path.exists(outfile):
-        print('chunk_size of size ' + str(chunk_size) + 'is larger than the number of reads. Using chunk_size equal to the nb of reads ('+str(i)+') instead')
-        i, data, matrix = pc_sort(i, matrix, data, chunk_size, kmers, outfile)
+
 
 
 def pc_sort(i, matrix, data, chunk_size, kmers, outfile):
@@ -78,7 +76,8 @@ def pc_sort(i, matrix, data, chunk_size, kmers, outfile):
     return i, data, matrix
 
 if __name__ == "__main__":
-    sort_by_pca(infile='data/ecoli_100Kb_reads_120x.fasta', outfile="out_x.fasta", chunk_size=12000)
-    print(monitor_gzip("out_x.fasta", 'data/headerless/ecoli_100Kb_reads_120x.fasta.headerless.gz'))
-
+    sort_by_pca(infile='data/ecoli_100Kb_reads_40x.fasta', outfile="out_x.fasta", chunk_size=40000)
+    print(monitor_gzip("out_x.fasta", 'data/headerless/ecoli_100Kb_reads_40x.fasta.headerless.gz'))
+    os.remove("out_x.fasta")
+    os.remove("out_x.fasta.gz")
     

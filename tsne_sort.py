@@ -60,12 +60,9 @@ def sort_by_tsne(infile, outfile, chunk_size):
             i, data, matrix = ts_sort(i, matrix, data, chunk_size, kmers, outfile)
     if i > 0:
         i, data, matrix = ts_sort(i, matrix, data, chunk_size, kmers, outfile)
-    if not os.path.exists(outfile):
-        print('chunk_size of size ' + str(chunk_size) + 'is larger than the number of reads. Using chunk_size equal to the nb of reads ('+str(i)+') instead')
-        i, data, matrix = ts_sort(i, matrix, data, chunk_size, kmers, outfile)
-    
+
 def ts_sort(i, matrix, data, chunk_size, kmers, outfile):
-    tsne = TSNE(n_components=1, perplexity=40, n_iter=300)
+    tsne = TSNE(n_components=1, perplexity=40, n_iter=300, init='pca')
     TS = tsne.fit_transform(matrix)
     for pc, seq, j in zip(TS, data, range(chunk_size)):
         data[j] = (pc, seq)
