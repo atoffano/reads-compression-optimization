@@ -12,8 +12,8 @@ from io import TextIOWrapper
 def format_output(process):
     out, error = process.communicate()
     output = str(out)
-    print(output if output != "b''" else "")
-    print(error if error != None else "")
+    # print(output if output != "b''" else "")
+    # print(error if error != None else "")
 
 
 def gzip_out(out_file):

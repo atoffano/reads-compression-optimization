@@ -15,10 +15,10 @@ def get_next_kmer(method: str, size: int, input: Path):
         return get_random_kmer(size=size, input=input)
 
     elif method == "occurence-max":
-        return get_occ_kmer(method="max")
+        return get_occ_kmer(method="max", input=input, size=size)
 
     elif method == "occurence-rate":
-        return get_occ_kmer(method="rate")
+        return get_occ_kmer(method="rate", input=input, size=size)
 
     elif method == "first-found":
         return get_first_kmer(input=input, size=size)
