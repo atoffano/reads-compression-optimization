@@ -5,8 +5,7 @@ from pathlib import Path
 from argparse import ArgumentParser
 from typing import Generator
 import subprocess
-from utils import fasta_reader, get_sequence, gzip_out, open_wipe_and_add
-from profiling import monitor, monitor_gzip
+from utils import *
 
 
 def get_next_kmer(method: str, size: int, input: Path):

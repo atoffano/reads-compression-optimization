@@ -4,7 +4,6 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from sklearn import manifold
 from utils import *
-from profiling import monitor
 import os
 
 def enum_kmers(k):
@@ -43,25 +42,26 @@ def encode_to_kmers(kmers, sequence):
             encoding.append(kmers.index(kmer))
     return encoding
 
+@timer_func
 def sort_by_pca(infile, outfile, chunk_size):
     #kmer embedding sorting
     kmers = enum_kmers(3)
     i = 0
     data = []
     matrix = np.zeros((chunk_size, len(kmers)), dtype=int)
-    for read_nb, read in enumerate(fasta_reader(infile)):
+    for read in fasta_reader(infile):
         sequence = get_sequence(read)
-        matrix[i] = encode_to_kmers(kmers, sequence)
+        matrix[i] = encode_kmers(kmers, sequence)
         i += 1
         data.append(sequence)
         if i == chunk_size:
-            i, data, matrix = pca_sort(i, matrix, data, chunk_size, kmers, outfile)
-    if not os.path.exists(outfile):
-        print('chunk_size of size ' + str(chunk_size) + 'is larger than the number of reads. Using chunk_size equal to the nb of reads ('+str(i)+') instead')
-        i, data, matrix = pca_sort(i, matrix, data, chunk_size, kmers, outfile)
+            i, data, matrix = pc_sort(i, matrix, data, chunk_size, kmers, outfile)
+    if i > 0:
+        i, data, matrix = pc_sort(i, matrix, data, chunk_size, kmers, outfile)
 
 
-def pca_sort(i, matrix, data, chunk_size, kmers, outfile):
+
+def pc_sort(i, matrix, data, chunk_size, kmers, outfile):
     pca = PCA(n_components=1)
     PC = pca.fit_transform(matrix).flatten()
     for pc, seq, j in zip(PC, data, range(chunk_size)):
@@ -76,10 +76,8 @@ def pca_sort(i, matrix, data, chunk_size, kmers, outfile):
     return i, data, matrix
 
 if __name__ == "__main__":
-    print(monitor(
-        func=sort_by_pca('data/ecoli_100Kb_reads_5x.fasta', "out_x.fasta", 5000),
-        input_file='out_x.fasta',
-        compare_to='data/headerless/ecoli_100Kb_reads_5x.fasta.headerless.gz')
-        )
-    os.remove('out_x.fasta')
-    os.remove('out_x.fasta.gz')
+    sort_by_pca(infile='data/ecoli_100Kb_reads_40x.fasta', outfile="out_x.fasta", chunk_size=40000)
+    print(monitor_gzip("out_x.fasta", 'data/headerless/ecoli_100Kb_reads_40x.fasta.headerless.gz'))
+    os.remove("out_x.fasta")
+    os.remove("out_x.fasta.gz")
+    
