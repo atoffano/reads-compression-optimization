@@ -33,7 +33,8 @@ def monitor_gzip(input_file, compare_to):
     with open(input_file, "rb") as f_in:
         with gzip.open(f"{input_file}.gz", "wb") as f_out:
             shutil.copyfileobj(f_in, f_out)
-    ret = unsorted_comp_size[compare_to] / os.path.getsize(f"{input_file}.gz")
+    # ret = unsorted_comp_size[compare_to] / os.path.getsize(f"{input_file}.gz")
+    ret = os.path.getsize(compare_to) / os.path.getsize(f"{input_file}.gz")
     return ret
 
 
@@ -94,6 +95,23 @@ def remove_headers(filein, fileout):
                 if line.startswith(">"):
                     continue
                 f2.write(line)
+
+
+def clean_file(filein, fileout):
+    with open(filein) as fi:
+        with open_wipe_and_add(fileout) as fo:
+            line = fi.readline()
+            seq = ""
+            while line:
+                if line.startswith(">"):
+                    if seq != "":
+                        fo.write("".join(seq.split("\n")) + "\n")
+                    seq = ""
+                    fo.write(line)
+                else:
+                    seq += line
+                line = fi.readline()
+            fo.write(seq)
 
 
 def open_wipe_and_add(filename: Path) -> TextIOWrapper:
