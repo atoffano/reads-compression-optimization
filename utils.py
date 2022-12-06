@@ -1,9 +1,11 @@
-from pathlib import Path
 import time
 import psutil
 import multiprocessing as mp
 import os, gzip
 import shutil
+
+from pathlib import Path
+from io import TextIOWrapper
 
 
 def timer_func(func):
@@ -29,7 +31,7 @@ def monitor_gzip(input_file, compare_to):
         "data/headerless/ecoli_100Kb_reads_80x.fasta.headerless.gz": 2342520,
     }
     with open(input_file, "rb") as f_in:
-        with gzip.open(f"{input_file.replace('data/', '')}.gz", "wb") as f_out:
+        with gzip.open(f"{input_file}.gz", "wb") as f_out:
             shutil.copyfileobj(f_in, f_out)
     ret = unsorted_comp_size[compare_to] / os.path.getsize(f"{input_file}.gz")
     return ret
@@ -92,6 +94,19 @@ def remove_headers(filein, fileout):
                 if line.startswith(">"):
                     continue
                 f2.write(line)
+
+
+def open_wipe_and_add(filename: Path) -> TextIOWrapper:
+    """Clean the file and open it as "a"
+    Args:
+        filename (Path): the output_file
+    Returns:
+        TextIOWrapper: the opened file
+    """
+    with open(filename, "w") as wipe:
+        wipe.write("")
+
+    return open(filename, "a")
 
 
 if __name__ == "__main__":

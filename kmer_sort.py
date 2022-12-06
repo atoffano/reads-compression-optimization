@@ -125,12 +125,13 @@ def get_kmer_dict(kmer: str, input: Path, size: int, method: str) -> dict:
     return kmer_dict
 
 
-def reorder(input: Path, out_file: Path, size: int, method: str) -> None:
-    """reorder the read of the input file in the output file without the labels
+@timer_func
+def sort_by_kmer(input: Path, output: Path, size: int, method: str) -> None:
+    """sort_by_kmer the read of the input file in the output file without the labels
 
     Args:
         input (str): input file
-        out_file (str): output file
+        output (str): output file
         kmer (str, optional): first kmer to use may be random. Defaults to "".
         size (str, optional): if first kmer is random set size of kmer to use. Defaults to "".
     """
@@ -147,7 +148,7 @@ def reorder(input: Path, out_file: Path, size: int, method: str) -> None:
     for kmer in kmer_list:
         sorted_kmer_dict[kmer] = kmer_dict[kmer]
 
-    with open_wipe_and_add(out_file) as file:
+    with open_wipe_and_add(output) as file:
         for kmer in sorted_kmer_dict:
             for count in sorted_kmer_dict[kmer]:
                 for read in sorted_kmer_dict[kmer][count]:
@@ -177,112 +178,5 @@ def erro_handling(input: Path, size: int) -> None:
         raise ValueError("Size cannot be greater than reads size")
 
 
-def launch_method_2(
-    size: int,
-    method: str,
-    input: Path,
-    output: Path,
-    delete_output: bool = False,
-) -> dict:
-    """function for launching the method inside a python script
-
-    Args:
-        input (Path): input file path
-        output (Path): output file path (may be deleted)
-        delete_output (bool, optional): if True delete output file after rate computation. Defaults to False.
-        kmer (str, optional): the first kmer to use. Defaults to "random".
-        size (int, optional): if kmer is empty set the kmer size to use. Defaults to 6.
-
-    Returns:
-        dict: logs of the operation
-    """
-
-    random.seed(42)
-    erro_handling(input=input, size=size)
-    # Reorder and get monitoring values
-    monitoring_values = monitor(
-        reorder(input=input, out_file=output, size=size, method=method)
-    )
-
-    # Compress the files
-    in_gz = "data/ori/" + input.split("data/")[1] + ".gz"
-    out_gz = gzip_out(output)
-
-    # get compression rate
-    rate = monitor_gzip(out_gz, in_gz)
-
-    # Delete the file if -d is on
-    if delete_output:
-        bashCommand = f"rm -rf {out_gz}"
-        process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
-        out, error = process.communicate()
-
-    monitoring_values["file"] = input
-    monitoring_values["kmer-size"] = size
-    monitoring_values["rate"] = rate
-
-    return monitoring_values
-
-
-def main() -> None:
-    """main function to launch the method with command line"""
-
-    # argparse
-    parser = ArgumentParser(
-        prog="method_2_jules.py",
-        description="",
-        epilog="Text at the bottom of help",
-    )
-
-    parser.add_argument("-i", "--input")
-    parser.add_argument("-d", "--delete_output", default=False)
-    parser.add_argument("-o", "--output")
-    parser.add_argument("-s", "--size_kmer")
-    parser.add_argument("-m", "--method")
-
-    args = parser.parse_args()
-    size = int(args.size_kmer)
-    delete_output = False if args.delete_output == "False" else True
-
-    # Check for errors
-    erro_handling(input=args.input, size=size)
-
-    # Reorder and get monitoring values
-    print("reordering...\n")
-    monitoring_values = monitor(
-        reorder(
-            input=args.input,
-            out_file=args.output,
-            size=size,
-            method=args.method,
-        )
-    )
-
-    # Print monitoring values
-    for key in monitoring_values:
-        print(f"{key} : {monitoring_values[key]}")
-
-    # Compress the files
-    in_gz = "data/ori/" + args.input.split("data/")[1] + ".gz"
-    out_gz = gzip_out(args.output)
-
-    # Print compression rate
-    compression_rate = monitor_gzip(out_gz, in_gz)
-
-    # Delete the file if -d is on
-    if delete_output:
-        bashCommand = f"rm -rf {out_gz}"
-        process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
-        out, error = process.communicate()
-
-    # write log in file
-    with open_wipe_and_add("log_method2.txt") as file:
-        for key in monitoring_values:
-            file.write(f"{key} : {monitoring_values[key]}\n")
-
-        file.write(f"compression rate : {compression_rate}")
-
-
 if __name__ == "__main__":
-
-    main()
+    pass
