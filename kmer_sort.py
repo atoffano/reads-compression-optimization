@@ -135,6 +135,7 @@ def sort_by_kmer(input: Path, output: Path, size: int, method: str) -> None:
         kmer (str, optional): first kmer to use may be random. Defaults to "".
         size (str, optional): if first kmer is random set size of kmer to use. Defaults to "".
     """
+    random.seed(42)
     first_kmer: str = get_next_kmer(method=method, size=size, input=input)
 
     kmer_dict: dict = get_kmer_dict(
