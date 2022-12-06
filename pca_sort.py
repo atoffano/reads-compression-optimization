@@ -34,14 +34,6 @@ def distribution(list):
 def encode_kmers(kmers, sequence):
     return [1 if kmer in sequence else 0 for kmer in kmers]
 
-def encode_to_kmers(kmers, sequence):
-    encoding = []
-    for i in range(len(sequence) - len(kmers[0]) + 1):
-        kmer = sequence[i:i+len(kmers[0])]
-        if kmer in kmers:
-            encoding.append(kmers.index(kmer))
-    return encoding
-
 @timer_func
 def sort_by_pca(infile, outfile, chunk_size):
     #kmer embedding sorting
@@ -58,7 +50,6 @@ def sort_by_pca(infile, outfile, chunk_size):
             i, data, matrix = pc_sort(i, matrix, data, chunk_size, kmers, outfile)
     if i > 0:
         i, data, matrix = pc_sort(i, matrix, data, chunk_size, kmers, outfile)
-
 
 
 def pc_sort(i, matrix, data, chunk_size, kmers, outfile):
@@ -78,6 +69,6 @@ def pc_sort(i, matrix, data, chunk_size, kmers, outfile):
 if __name__ == "__main__":
     sort_by_pca(infile='data/ecoli_100Kb_reads_40x.fasta', outfile="out_x.fasta", chunk_size=40000)
     print(monitor_gzip("out_x.fasta", 'data/headerless/ecoli_100Kb_reads_40x.fasta.headerless.gz'))
-    os.remove("out_x.fasta")
+    # os.remove("out_x.fasta")
     os.remove("out_x.fasta.gz")
     
