@@ -1,5 +1,6 @@
 data/*
 __pycache__/*
+tempfile/*
 method_2_temp
 log_method2.txt
 out_x.fasta
