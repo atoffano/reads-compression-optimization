@@ -22,18 +22,10 @@ def timer_func(func):
 
 
 def monitor_gzip(input_file, compare_to):
-    unsorted_comp_size = {
-        "data/headerless/ecoli_100Kb_reads_10x.fasta.headerless.gz": 292244,
-        "data/headerless/ecoli_100Kb_reads_120x.fasta.headerless.gz": 3508076,
-        "data/headerless/ecoli_100Kb_reads_20x.fasta.headerless.gz": 586108,
-        "data/headerless/ecoli_100Kb_reads_40x.fasta.headerless.gz": 1170066,
-        "data/headerless/ecoli_100Kb_reads_5x.fasta.headerless.gz": 146953,
-        "data/headerless/ecoli_100Kb_reads_80x.fasta.headerless.gz": 2342520,
-    }
+
     with open(input_file, "rb") as f_in:
         with gzip.open(f"{input_file}.gz", "wb") as f_out:
             shutil.copyfileobj(f_in, f_out)
-    # ret = unsorted_comp_size[compare_to] / os.path.getsize(f"{input_file}.gz")
     ret = os.path.getsize(compare_to) / os.path.getsize(f"{input_file}.gz")
     return ret
 
@@ -126,7 +118,22 @@ def open_wipe_and_add(filename: Path) -> TextIOWrapper:
 
     return open(filename, "a")
 
-
+def clean_file(filein, fileout):
+    with open(filein) as fi:
+        with open_wipe_and_add(fileout) as fo:
+            line = fi.readline()
+            seq = ""
+            while line:
+                if line.startswith(">"):
+                    if seq != "":
+                        fo.write("".join(seq.split("\n")) + "\n")
+                    seq = ""
+                    fo.write(line)
+                else:
+                    seq += line
+                line = fi.readline()
+            fo.write(seq)
+            
 if __name__ == "__main__":
     from tsne_sort import sort_by_tsne
 

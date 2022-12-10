@@ -11,7 +11,7 @@ def argparser():
                     Console arguments
                     -i / --infile (str) : infile fasta file with headers
                     -m / --method (str): Method used to sort reads. Can be 'tsne_sort', 'pca_sort' or 'kmer_sort'
-                    -d / --delete_output (bool) : Delete outfile file after compression ratio is computed
+                    -d / --delete_output (bool) : Delete output file after compression ratio is computed
                     -c / --compare_to (str) : headerless fasta.gz file to compare to in order to compute compression ratio
                     -s / --size_kmer (int) : size of kmer used for kmer_sort
                     -cs / --chunk_size (int) : size of chunk used for tsne_sort and pca_sort
@@ -41,48 +41,48 @@ def read_sort_main(
     cut: int = 2,
 ):
     log = {}
-    outfile = "_out.".join(infile.split("."))
+    output = "_out.".join(infile.split("."))
 
     t1 = time.time()
 
     if method == "kmer_sort":
-        kmer_sort.sort_by_kmer(infile=infile, outfile=outfile, size=size, cut=cut)
+        kmer_sort.sort_by_kmer(infile=infile, output=output, size=size, cut=cut)
     elif method == "tsne_sort":
-        tsne_sort.sort_by_tsne(infile, outfile, int(chunk_size))
+        tsne_sort.sort_by_tsne(infile, output, int(chunk_size))
     elif method == "pca_sort":
-        pca_sort.sort_by_pca(infile, outfile, int(chunk_size))
+        pca_sort.sort_by_pca(infile, output, int(chunk_size))
 
     log["time"] = time.time() - t1
-    log["rate"] = monitor_gzip(outfile, compare_to)
+    log["rate"] = monitor_gzip(output, compare_to)
 
     if delete:
-        os.remove(outfile)
-        os.remove(outfile + ".gz")
+        os.remove(output)
+        os.remove(output + ".gz")
 
     return log
 
 
 def main():
     args = argparser()
-
-    outfile = "_out.".join(args.infile.split("."))
+    args.delete_output = True if args.delete_output == "True" else False
+    output = "_out.".join(args.input.split("."))
 
     if args.method == "kmer_sort":
         size = int(args.size_kmer)
         cut = int(args.cut)
-        kmer_sort.sort_by_kmer(infile=args.infile, outfile=outfile, size=size, cut=cut)
+        kmer_sort.sort_by_kmer(infile=args.infile, output=output, size=size, cut=cut)
 
-    elif args.method == "tsne_sort":
-        tsne_sort.sort_by_tsne(args.infile, outfile, int(args.chunk_size))
+    if args.method == "tsne_sort":
+        tsne_sort.sort_by_tsne(args.input, output, int(args.chunk_size))
 
-    elif args.method == "pca_sort":
-        pca_sort.sort_by_pca(args.infile, outfile, int(args.chunk_size))
+    if args.method == "pca_sort":
+        pca_sort.sort_by_pca(args.input, output, int(args.chunk_size))
 
-    print(f"Compression ratio : {monitor_gzip(outfile, args.compare_to)}")
+    print(f"Compression ratio : {monitor_gzip(output, args.compare_to)}")
 
     if args.delete_output == "True":
-        os.remove(outfile)
-        os.remove(outfile + ".gz")
+        os.remove(output)
+        os.remove(output + ".gz")
 
 
 if __name__ == "__main__":
