@@ -25,7 +25,8 @@ def argparser():
     parser.add_argument("-c", "--compare_to")
     parser.add_argument("-s", "--size_kmer", default=6, help="")
     parser.add_argument("-cs", "--chunk_size", default=1000000, help="")
-    parser.add_argument("-cu", "--cut", default=2, help="")
+    parser.add_argument("-cu", "--cutoff", default=1000, help="")
+    parser.add_argument("-in", "--intervals_number", default=3, help="")
 
     args = parser.parse_args()
     return args
@@ -38,7 +39,8 @@ def read_sort_main(
     method: str = "kmer_sort",
     size: int = 6,
     chunk_size: int = 1000000,
-    cut: int = 2,
+    intervals_number: int = 3,
+    cutoff=1000,
 ):
     log = {}
     output = "_out.".join(infile.split("."))
@@ -46,7 +48,13 @@ def read_sort_main(
     t1 = time.time()
 
     if method == "kmer_sort":
-        kmer_sort.sort_by_kmer(infile=infile, output=output, size=size, cut=cut)
+        kmer_sort.sort_by_kmer(
+            infile=infile,
+            output=output,
+            size=size,
+            intervals_number=intervals_number,
+            cutoff=cutoff,
+        )
     elif method == "tsne_sort":
         tsne_sort.sort_by_tsne(infile, output, int(chunk_size))
     elif method == "pca_sort":
@@ -65,12 +73,19 @@ def read_sort_main(
 def main():
     args = argparser()
     args.delete_output = True if args.delete_output == "True" else False
-    output = "_out.".join(args.input.split("."))
+    output = "_out.".join(args.infile.split("."))
 
     if args.method == "kmer_sort":
         size = int(args.size_kmer)
-        cut = int(args.cut)
-        kmer_sort.sort_by_kmer(infile=args.infile, output=output, size=size, cut=cut)
+        cutoff = int(args.cutoff)
+        intervals_number = int(args.intervals_number)
+        kmer_sort.sort_by_kmer(
+            infile=args.infile,
+            output=output,
+            size=size,
+            intervals_number=intervals_number,
+            cutoff=cutoff,
+        )
 
     if args.method == "tsne_sort":
         tsne_sort.sort_by_tsne(args.input, output, int(args.chunk_size))
