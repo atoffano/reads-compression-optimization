@@ -62,7 +62,7 @@ def read_sort_main(
 
 def main():
     args = argparser()
-
+    args.delete_output = True if args.delete_output == "True" else False
     output = "_out.".join(args.input.split("."))
 
     if args.method == "kmer_sort":

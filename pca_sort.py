@@ -34,7 +34,6 @@ def distribution(list):
 def encode_kmers(kmers, sequence):
     return [1 if kmer in sequence else 0 for kmer in kmers]
 
-@timer_func
 def sort_by_pca(infile, outfile, chunk_size):
     #kmer embedding sorting
     kmers = enum_kmers(3)
@@ -51,7 +50,7 @@ def sort_by_pca(infile, outfile, chunk_size):
     if i > 0:
         i, data, matrix = pc_sort(i, matrix, data, chunk_size, kmers, outfile)
 
-
+@timer_func
 def pc_sort(i, matrix, data, chunk_size, kmers, outfile):
     pca = PCA(n_components=1)
     PC = pca.fit_transform(matrix).flatten()
