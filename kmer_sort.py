@@ -35,8 +35,12 @@ def get_identifier(read: str, kmer: str, intervals: list) -> str:
     return str(len(kmer_positions)) + kmer_positions
 
 
-def get_kmer_count_dict(
-    kmer: str, current_file: str, next_file: str, intervals_number: int, seqlen: int
+def get_identifiers_dict(
+    kmer: str,
+    current_file: str,
+    next_file: str,
+    intervals_number: int,
+    seqlen: int,
 ) -> Tuple[dict, list]:
     """Build the dict with the num of occurence of the given kmer as key and the lists
        of the correspondings reads as value
@@ -49,83 +53,81 @@ def get_kmer_count_dict(
         dict: dict with num of occurence as keys and reads lists as values
     """
     not_sorted: list = []
-    kmer_count_dict: dict = {}
+    identifiers_dict: dict = {}
     reader: Generator = fasta_reader(current_file)
     intervals: list = [i * (seqlen / intervals_number) for i in range(intervals_number)]
-
     with open_wipe_and_add(next_file) as file:
         for read in reader:
 
             identifier: str = get_identifier(read=read, kmer=kmer, intervals=intervals)
             if identifier == "0":
-                not_sorted.append(read)
+                not_sorted.append(get_sequence(read))
                 file.write(read + "\n")
             else:
-                if not identifier in kmer_count_dict:
-                    kmer_count_dict[identifier] = [read]
+                if not identifier in identifiers_dict:
+                    identifiers_dict[identifier] = [get_sequence(read)]
                 else:
-                    kmer_count_dict[identifier].append(read)
+                    identifiers_dict[identifier].append(get_sequence(read))
 
-    return kmer_count_dict, not_sorted
+    return identifiers_dict, not_sorted
 
 
-def get_kmer_dict(
+def sorting(
     kmer: str,
     infile: str,
+    output: str,
     original_size: int,
     intervals_number: int,
     seqlen: int,
     cutoff: int,
 ) -> dict:
 
-    kmer_dict: dict = {}
-    breaking: bool = False
+    used_kmer: list = []
     size: int = original_size
     current_file: str = infile
     next_file: str = "tempfile/kmer_sort_no_init"
-    # a dict is build for the first kmer and then we pick another kmer to sort the
-    # reads in which the previous kmer had 0 occurences
+    with open_wipe_and_add(output) as output_file:
+        for round in range(cutoff):
 
-    for round in range(cutoff):
+            used_kmer.append(kmer)
 
-        # build the occurence dict for the current kmer
-        kmer_dict[kmer], not_sorted = get_kmer_count_dict(
-            kmer=kmer,
-            current_file=current_file,
-            next_file=next_file,
-            intervals_number=intervals_number,
-            seqlen=seqlen,
-        )
-        if current_file != infile:
-            os.remove(current_file)
+            identifiers_dict, not_sorted = get_identifiers_dict(
+                kmer=kmer,
+                current_file=current_file,
+                next_file=next_file,
+                intervals_number=intervals_number,
+                seqlen=seqlen,
+            )
 
-        current_file = next_file
-        next_file = current_file.split("no")[0] + f"no{str(round)}"
+            for identifier in identifiers_dict:
+                for seq in identifiers_dict[identifier]:
+                    output_file.write(seq + "\n")
 
-        # if all the reads has been sorted we end the loop
-        if not_sorted == []:
-            breaking: bool = True
-            break
+            # if all the reads has been sorted we end the loop
+            if not not_sorted:
+                break
 
-        else:
-            last_zero: list = deepcopy(not_sorted)
+            if current_file != infile:
+                os.remove(current_file)
 
-        kmer: str = get_random_kmer(size=size, infile=current_file)
-        current_size = size
-        while kmer in kmer_dict:
-            kmer: str = get_random_kmer(size=size, infile=current_file)
-            size += 1
-        size = current_size
+            current_file = next_file
+            next_file = current_file.split("no")[0] + f"no{str(round)}"
 
-    if not breaking:
-        # if we reach the cutoff we keep the rest of the reads as an unsorted list
-        print(f"reaching {cutoff}")
-        kmer_dict["LAST"]: dict = {"0": last_zero}
+            current_size = size
+            while kmer in used_kmer:
+                kmer: str = get_random_kmer(size=size, infile=current_file)
+                size += 1
+            size = current_size
+
+        if not_sorted:
+            # if we reach the cutoff we keep the rest of the reads as an unsorted list
+            print(f"reaching {cutoff}")
+            for seq in not_sorted:
+                output_file.write(seq + "\n")
 
     if current_file != infile:
         os.remove(current_file)
-
-    return kmer_dict
+        os.remove(next_file)
 
 
 @timer_func
@@ -151,20 +153,15 @@ def sort_by_kmer(
 
     seqlen = len(get_sequence(next(fasta_reader(infile))))
     first_kmer: str = get_random_kmer(size=size, infile=infile)
-    kmer_dict: dict = get_kmer_dict(
+    sorting(
         kmer=first_kmer,
         infile=infile,
+        output=output,
         original_size=size,
         intervals_number=intervals_number,
         seqlen=seqlen,
         cutoff=cutoff,
     )
-
-    with open_wipe_and_add(output) as file:
-        for kmer in kmer_dict:
-            for count in kmer_dict[kmer]:
-                for read in kmer_dict[kmer][count]:
-                    file.write(get_sequence(read) + "\n")
 
 
 def erro_handling(
@@ -205,4 +202,4 @@ def erro_handling(
 if __name__ == "__main__":
     pass
 
-# python read_sort.py -i data/ecoli_100Kb_reads_120x.fasta -m kmer_sort -c data/headerless/ecoli_100Kb_reads_120x.fasta.headerless.gz -d True
+# python read_sort.py -i data/ecoli_100Kb_reads_120x.fasta -m kmer_sort -c data/headerless/ecoli_100Kb_reads_120x.fasta.headerless.gz -d False
