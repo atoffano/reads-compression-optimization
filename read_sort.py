@@ -88,14 +88,14 @@ def main():
         )
 
     if args.method == "tsne_sort":
-        tsne_sort.sort_by_tsne(args.input, output, int(args.chunk_size))
+        tsne_sort.sort_by_tsne(args.infile, output, int(args.chunk_size))
 
     if args.method == "pca_sort":
-        pca_sort.sort_by_pca(args.input, output, int(args.chunk_size))
+        pca_sort.sort_by_pca(args.infile, output, int(args.chunk_size))
 
     if args.method == "chatgpt_sort":
         chatGPT_sort.sort_by_minimizer(
-            args.input, output
+            args.infile, output
         )
 
     print(f"Compression ratio : {monitor_gzip(output, args.compare_to)}")
