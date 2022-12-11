@@ -25,7 +25,7 @@ def argparser():
     parser.add_argument("-c", "--compare_to")
     parser.add_argument("-s", "--size_kmer", default=6, help="")
     parser.add_argument("-cs", "--chunk_size", default=1000000, help="")
-    parser.add_argument("-cu", "--cutoff", default=1000, help="")
+    parser.add_argument("-cu", "--cutoff", default=0, help="")
     parser.add_argument("-in", "--intervals_number", default=3, help="")
 
     args = parser.parse_args()
@@ -40,7 +40,7 @@ def read_sort_main(
     size: int = 6,
     chunk_size: int = 1000000,
     intervals_number: int = 3,
-    cutoff=1000,
+    cutoff=0,
 ):
     log = {}
     output = "_out.".join(infile.split("."))

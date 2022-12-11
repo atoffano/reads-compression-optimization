@@ -150,7 +150,7 @@ def sort_by_kmer(
         intervals_number=intervals_number,
         cutoff=cutoff,
     )
-
+    cutoff = len(list(fasta_reader(infile))) if cutoff <= 0 else cutoff
     seqlen = len(get_sequence(next(fasta_reader(infile))))
     first_kmer: str = get_random_kmer(size=size, infile=infile)
     sorting(
@@ -186,8 +186,6 @@ def erro_handling(
         raise ValueError("Size cannot be greater than reads size")
     if size <= 1:
         raise ValueError("Size must be greater than 1")
-    if cutoff < 1:
-        raise ValueError("negative cutoff")
     if intervals_number > len(get_sequence(read)):
         raise ValueError("interval number cannot be greater than reads size")
     if intervals_number < 1:
