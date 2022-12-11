@@ -20,7 +20,7 @@ def argparser():
 
     # Add the arguments to the parser
     parser.add_argument("-i", "--infile", required=False, help="")
-    parser.add_argument("-d", "--delete_output", default=False, help="")
+    parser.add_argument("-d", "--delete_output", default="True", help="")
     parser.add_argument("-m", "--method", required=True, help="")
     parser.add_argument("-c", "--compare_to")
     parser.add_argument("-s", "--size_kmer", default=6, help="")
@@ -94,13 +94,11 @@ def main():
         pca_sort.sort_by_pca(args.input, output, int(args.chunk_size))
 
     if args.method == "chatgpt_sort":
-        chatGPT_sort.sort_by_minimizer(
-            args.input, output
-        )
+        chatGPT_sort.sort_by_minimizer(args.input, output)
 
     print(f"Compression ratio : {monitor_gzip(output, args.compare_to)}")
 
-    if args.delete_output == "True":
+    if str(args.delete_output) == "True":
         os.remove(output)
         os.remove(output + ".gz")
 
