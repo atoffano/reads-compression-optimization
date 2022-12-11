@@ -1,5 +1,5 @@
 from argparse import ArgumentParser
-import tsne_sort, pca_sort, kmer_sort
+import tsne_sort, pca_sort, kmer_sort, chatGPT_sort
 from utils import *
 import time
 
@@ -92,6 +92,11 @@ def main():
 
     if args.method == "pca_sort":
         pca_sort.sort_by_pca(args.input, output, int(args.chunk_size))
+
+    if args.method == "chatgpt_sort":
+        chatGPT_sort.sort_by_minimizer(
+            args.input, output
+        )
 
     print(f"Compression ratio : {monitor_gzip(output, args.compare_to)}")
 
