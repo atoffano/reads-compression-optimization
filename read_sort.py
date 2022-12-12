@@ -86,9 +86,9 @@ def argparse_parser(args: Namespace) -> Namespace:
     args.compare_to = Path(args.compare_to) if args.compare_to else False
     if not args.output:
         args.output = (
-            Path("_organized.".join(args.infile.split(".")))
-            if args.infile.count(".") == 1
-            else args.infile + "_organized"
+            Path("_organized.".join(args.infile.name.split(".")))
+            if args.infile.name.count(".") == 1
+            else args.infile.name + "_organized"
         )
     else:
         args.output = Path(args.output)
@@ -102,7 +102,7 @@ def argparse_parser(args: Namespace) -> Namespace:
     args.size_kmer = int(args.size_kmer)
     args.chunk_size = int(args.chunk_size)
     args.cutoff = int(args.cutoff)
-    args.intervals_number = int(args.interval_number)
+    args.intervals_number = int(args.intervals_number)
 
     return args
 
@@ -161,7 +161,7 @@ def main():
         kmer_sort.sort_by_kmer(
             infile=args.infile,
             output=args.output,
-            size=args.size,
+            size=args.size_kmer,
             intervals_number=args.intervals_number,
             cutoff=args.cutoff,
         )
@@ -182,9 +182,12 @@ def main():
     if args.compare_to:
         print(f"Compression ratio : {monitor_gzip(args.output, args.compare_to)}")
 
-    if args.delete_output:
+    if (
+        args.delete_output
+    ):  # this should only be use to test the performance of the sorting algorithm
         os.remove(args.output)
-        os.remove(args.output.name + ".gz")
+        if args.compare_to:
+            os.remove(args.output.name + ".gz")
 
 
 if __name__ == "__main__":

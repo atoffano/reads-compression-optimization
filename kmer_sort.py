@@ -1,10 +1,12 @@
 import random
-from typing import Generator, Tuple
-from utils import *
+
 from pathlib import Path
+from typing import Generator, Tuple
+
+from utils import *
 
 
-def get_random_kmer(size: int, infile: Path) -> str:
+def __get_random_kmer(size: int, infile: Path) -> str:
     """return a random k-mer picked in the first sequence of the current source file
 
     Args:
@@ -16,22 +18,35 @@ def get_random_kmer(size: int, infile: Path) -> str:
     """
     seq: str = get_sequence(next(fasta_reader(infile)))
     start: int = random.randint(0, len(seq) - size)
+
     return seq[start : start + size]
 
 
-def get_identifier(read: str, kmer: str, intervals: list) -> str:
+def __get_identifier(read: str, kmer: str, intervals: list) -> str:
+    """return the read identifier with the occurence and position of a kmer in the read
+
+    Args:
+        read (str): the read we loof for
+        kmer (str): the kmer we search in the read
+        intervals (list): the position intervals used for relative position of the kmer
+
+    Returns:
+        str: the identifier computed if there is no kmer in the read it will be "0"
+    """
     seq: str = get_sequence(read)
     kmer_positions: str = ""
     last_kmer_index: int = 0
     move_index: int = 1
+
     while move_index != 0:  # if the result of the find() is -1 we stop the loop
 
+        # look for the next kmer starting after the previous found kmer start
         move_index = seq[last_kmer_index:].find(kmer) + 1
 
-        # a = input()
         if move_index > 0:
             last_kmer_index += move_index
 
+            # concatenate str with the relative position of the kmer start
             if last_kmer_index >= intervals[-1]:
                 kmer_positions += str(len(intervals))
             else:
@@ -40,66 +55,89 @@ def get_identifier(read: str, kmer: str, intervals: list) -> str:
                     + 1
                 )
 
+    # len("") = 0 so if there is no kmer found in the read the identifier is "0"
     return str(len(kmer_positions)) + kmer_positions
 
 
-def get_identifiers_dict(
+def __get_identifiers_dict(
     kmer: str,
-    current_file: str,
-    next_file: str,
+    current_file: Path,
+    next_file: Path,
     intervals_number: int,
     seqlen: int,
 ) -> Tuple[dict, list]:
-    """Build the dict with the num of occurence of the given kmer as key and the lists
-       of the correspondings reads as value
+    """Return a dictionary of the identifier and the reads associated to it, also return
+       the list of unsorted reads
 
     Args:
-        kmer (str): the given kmer
-        file (str): the infile file str
+        kmer (str): he kmer we search in the read
+        current_file (Path): the current source file Path
+        next_file (Path): the next source file Path
+        intervals_number (int): number of relative position interval to use
+        seqlen (int): length of the reads in the source file
 
     Returns:
-        dict: dict with num of occurence as keys and reads lists as values
+        Tuple[dict, list]: dictionary of the identifier and there list of reads,
+                           the list of unsorted reads
     """
     not_sorted: list = []
     identifiers_dict: dict = {}
     reader: Generator = fasta_reader(current_file)
+    # with an interval number of 4 and seqlen of 100, intervals will look like :
+    # [0.0, 25.0, 50.0, 75.0]
     intervals: list = [i * (seqlen / intervals_number) for i in range(intervals_number)]
-    with open_wipe_and_add(next_file) as file:
-        for read in reader:
 
-            identifier: str = get_identifier(read=read, kmer=kmer, intervals=intervals)
-            if identifier == "0":
+    with open_wipe_and_add(next_file) as temp_file:
+        for read in reader:
+            identifier: str = __get_identifier(
+                read=read, kmer=kmer, intervals=intervals
+            )
+            if identifier == "0":  # case of no kmer found in the read
                 not_sorted.append(get_sequence(read))
-                file.write(read + "\n")
+                temp_file.write(read + "\n")
             else:
-                if not identifier in identifiers_dict:
+                if (
+                    not identifier in identifiers_dict
+                ):  # first occurence of the identifier
                     identifiers_dict[identifier] = [get_sequence(read)]
-                else:
+                else:  # already seen identifier
                     identifiers_dict[identifier].append(get_sequence(read))
 
     return identifiers_dict, not_sorted
 
 
-def sorting(
-    kmer: str,
-    infile: str,
-    output: str,
+def __sorting(
+    infile: Path,
+    output: Path,
     original_size: int,
     intervals_number: int,
     seqlen: int,
     cutoff: int,
-) -> dict:
+) -> None:
+    """Take the input and write the sorted output file with the given parameters
 
+    Args:
+        infile (Path): Source file Path
+        output (Path): Output file Path
+        original_size (int): kmer sie passed in argument
+        intervals_number (int): number of relative position interval to use
+        seqlen (int): length of the reads in the source file
+        cutoff (int): maximum authorized kmer generation
+    """
     used_kmer: list = []
     size: int = original_size
-    current_file: str = infile
-    next_file: str = "tempfile/kmer_sort_no_init"
+    current_file: Path = infile
+    next_file: Path = Path("kmer_sort_temp_no_init")
+    kmer: str = __get_random_kmer(size=size, infile=infile)
+
     with open_wipe_and_add(output) as output_file:
         for round in range(cutoff):
 
-            used_kmer.append(kmer)
+            used_kmer.append(kmer)  # keep in memory already used kmer
 
-            identifiers_dict, not_sorted = get_identifiers_dict(
+            # get identifier and there list of read for the current kmer, also get the
+            # list of reads where no kmer were found
+            identifiers_dict, not_sorted = __get_identifiers_dict(
                 kmer=kmer,
                 current_file=current_file,
                 next_file=next_file,
@@ -107,62 +145,68 @@ def sorting(
                 seqlen=seqlen,
             )
 
+            # Write sorted reads for the current kmer in the output file
             for identifier in identifiers_dict:
                 for seq in identifiers_dict[identifier]:
                     output_file.write(seq + "\n")
 
-            # if all the reads has been sorted we end the loop
+            # If all the reads has been sorted we end the loop
             if not not_sorted:
                 break
 
-            if current_file != infile:
+            # Make sure we remove only temporary file and not the
+            if current_file.name != infile.name:
                 os.remove(current_file)
 
+            # We put last next_file as current file and generate another next_file
             current_file = next_file
-            next_file = current_file.split("no")[0] + f"no{str(round)}"
+            next_file = Path(current_file.name.split("no")[0] + f"no{str(round)}")
 
+            # Get the next kmer, if we draw an already seen kmer, we draw another with
+            # a size greater of 1 to avoid (close to) infinite draw in case of small kmer
             current_size = size
             while kmer in used_kmer:
-                kmer: str = get_random_kmer(size=size, infile=current_file)
+                kmer: str = __get_random_kmer(size=size, infile=current_file)
                 size += 1
             size = current_size
 
+        # if we reach the cutoff we keep the rest of the reads as an unsorted list
         if not_sorted:
-            # if we reach the cutoff we keep the rest of the reads as an unsorted list
             print(f"reaching {cutoff}")
             for seq in not_sorted:
                 output_file.write(seq + "\n")
 
-    if current_file != infile:
+    # remove the lasts temporary files
+    if current_file.name != infile.name:
         os.remove(current_file)
         os.remove(next_file)
 
 
 @timer_func
 def sort_by_kmer(
-    infile: str, output: str, size: int, intervals_number: int, cutoff: int
+    infile: Path, output: Path, size: int, intervals_number: int, cutoff: int
 ) -> None:
-    """sort_by_kmer the read of the infile file in the output file without the labels
+    """Launching function of the method, check for error and sort the source file
 
     Args:
-        infile (str): infile file
-        output (str): output file
-        size (str, optional): if first kmer is random set size of kmer to use. Defaults to "".
+        infile (Path): Source file Path
+        output (Path): Output file Path
+        size (int): size of kmer to use
+        intervals_number (int): number of relative position interval to use
+        cutoff (int): maximum authorized kmer generation
     """
     random.seed(42)
 
-    erro_handling(
+    # check for error in argument values
+    __error_handling(
         infile=infile,
-        output=output,
         size=size,
         intervals_number=intervals_number,
-        cutoff=cutoff,
     )
+
     cutoff = len(list(fasta_reader(infile))) if cutoff <= 0 else cutoff
     seqlen = len(get_sequence(next(fasta_reader(infile))))
-    first_kmer: str = get_random_kmer(size=size, infile=infile)
-    sorting(
-        kmer=first_kmer,
+    __sorting(
         infile=infile,
         output=output,
         original_size=size,
@@ -172,22 +216,15 @@ def sort_by_kmer(
     )
 
 
-def erro_handling(
-    infile: str, output: str, size: int, intervals_number: int, cutoff: int
-) -> None:
-    """Handle error regarding the kmer or size given in arguments
+def __error_handling(infile: Path, size: int, intervals_number: int) -> None:
+    """Handle error than can occured from wrong arguments values
 
     Args:
-        infile (str): infile file
-        kmer (str): given kmer
-        size (int): given size
-
-    Raises:
-        ValueError: kmer size check
-        ValueError: positive and non-null size check
-        ValueError: size limit check
+        infile (Path): Source file Path
+        size (int): kmer size passed in argument
+        intervals_number (int): number of interval passed in argument
     """
-    reader: Generator = fasta_reader(filename=infile)
+    reader: Generator = fasta_reader(infile)
     read = next(reader)
 
     if size > len(get_sequence(read)):
@@ -207,5 +244,3 @@ def erro_handling(
 
 if __name__ == "__main__":
     pass
-
-# python read_sort.py -i data/ecoli_100Kb_reads_120x.fasta -m kmer_sort -c data/headerless/ecoli_100Kb_reads_120x.fasta.headerless.gz -d False
