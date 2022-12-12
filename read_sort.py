@@ -2,6 +2,7 @@ from argparse import ArgumentParser
 import tsne_sort, pca_sort, kmer_sort, chatGPT_sort
 from utils import *
 import time
+from pathlib import Path
 
 
 def argparser():
@@ -43,7 +44,7 @@ def read_sort_main(
     cutoff=0,
 ):
     log = {}
-    output = "_out.".join(infile.split("."))
+    output = "_organized.".join(infile.split("."))
 
     t1 = time.time()
 
@@ -73,7 +74,7 @@ def read_sort_main(
 def main():
     args = argparser()
     args.delete_output = True if args.delete_output == "True" else False
-    output = "_out.".join(args.infile.split("."))
+    output = "_organized.".join(args.infile.split("."))
 
     if args.method == "kmer_sort":
         size = int(args.size_kmer)

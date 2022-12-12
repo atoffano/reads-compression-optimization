@@ -1,11 +1,19 @@
 import random
-from copy import deepcopy
 from typing import Generator, Tuple
 from utils import *
+from pathlib import Path
 
 
-def get_random_kmer(size: str, infile: str) -> str:
+def get_random_kmer(size: int, infile: Path) -> str:
+    """return a random k-mer picked in the first sequence of the current source file
 
+    Args:
+        size (int): size of the kmer to generate
+        infile (Path): source file path
+
+    Returns:
+        str: _description_
+    """
     seq: str = get_sequence(next(fasta_reader(infile)))
     start: int = random.randint(0, len(seq) - size)
     return seq[start : start + size]
