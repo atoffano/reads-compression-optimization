@@ -1,7 +1,7 @@
 # reads-compression-optimization
 Optimizing read ordering for a better compression efficiency.
 
-## Goal
+## Purpose
 Sequencing data requires a large disk space in order to store its output. In this project we try to reorder the reads contained in a sequencing output file in a .fasta format to have similar reads close by.
 
 This repository contains a few functions that utilize different strategies in order to match reads.
