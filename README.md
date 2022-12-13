@@ -8,10 +8,10 @@ This repository contains a few functions that utilize different strategies in or
 The functions employed here are based on two main strategies : either a minimizer-based sorting method or a dimension reduction method.
 
 ## Strategies
-- kmer_sort : A method that compresses the file by matching reads through a k-mer minimizer.
-- rollinghash_sort : Uses a rolling hash function in order to find the best minimizer to reorder the reads.
-- pca_sort : A function that uses PCA in order to assert their similarity to each other.
-- tsne_sort : Works quite like pca_sort, but with far better results and far worse execution time.
+- `kmer_sort` : A method that compresses the file by matching reads through a k-mer minimizer.
+- `rollinghash_sort` : Uses a rolling hash function in order to find the best minimizer to reorder the reads.
+- `pca_sort` : A function that uses PCA in order to assert their similarity to each other.
+- `tsne_sort` : Works quite like pca_sort, but with far better results and far worse execution time.
 
 |             |    Kmer    | Pollinghash |    PCA    |   t-SNE   |
 |-------------|------------|-------------|-----------|-----------|
@@ -20,7 +20,8 @@ The functions employed here are based on two main strategies : either a minimize
 |  RAM Usage  | ●●         | ●●●●        |   ●●●     | ●         |
 
 ## Usage
-$ python read_sort.py --input [input fasta] --method [strategy_name]
+`$ python read_sort.py --input [input fasta] --method [strategy_name]`
+
 ### Arguments
  --compare_to [.fasta.gz of the input without headers] 
  --chunk_size : 
