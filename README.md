@@ -15,9 +15,9 @@ The functions employed here are based on two main strategies : either a minimize
 
 |             |    Kmer    | Pollinghash |    PCA    |   t-SNE   |
 |-------------|------------|-------------|-----------|-----------|
-| Compression | ●●         | ●●●         |   ●       | ●●●       |
-|    Speed    | ●●         | ●●●         |   ●●●     | ●         |
-|  RAM Usage  | ●●●        | ●●●         |   ●●      | ●         |
+| Compression | ●●         | ●●●●        |   ●●      | ●●●●      |
+|    Speed    | ●●         | ●●●●        |   ●       | ●●        |
+|  RAM Usage  | ●●         | ●●●●        |   ●●●     | ●         |
 
 ## Usage
 $ python read_sort.py --input [input fasta] --method [strategy_name]
