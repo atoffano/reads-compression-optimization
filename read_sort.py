@@ -9,14 +9,54 @@ def argparser():
     parser = ArgumentParser()
 
     # Add the arguments to the parser
-    parser.add_argument("-i", "--infile", required=False, help="")
-    parser.add_argument("-d", "--delete_output", default="True", help="")
-    parser.add_argument("-m", "--method", required=True, help="")
-    parser.add_argument("-c", "--compare_to")
-    parser.add_argument("-s", "--size_kmer", default=6, help="")
-    parser.add_argument("-cs", "--chunk_size", default=0, help="")
-    parser.add_argument("-cu", "--cutoff", default=0, help="")
-    parser.add_argument("-in", "--intervals_number", default=3, help="")
+    parser.add_argument("-i", "--infile", required=True, help="Input file path")
+    parser.add_argument(
+        "-o",
+        "--output",
+        required=False,
+        help="Output file path, if not provided output will be save in the script file folder",
+    )
+    parser.add_argument(
+        "-d",
+        "--delete_output",
+        default=False,
+        help="""passed 'T' (True) to delete any output after the algorithm"""
+        """. This only should be used to monitor performance""",
+    )
+    parser.add_argument(
+        "-m",
+        "--method",
+        required=True,
+        help="Method to use between 'tsne_sort', 'pca_sort','kmer_sort','chatgpt_sort'",
+    )
+    parser.add_argument(
+        "-c",
+        "--compare_to",
+        default=False,
+        help="File path to compare the compressed output file with",
+    )
+    parser.add_argument(
+        "-s", "--size_kmer", default=6, help="Kmer size to use in kmer_sort method"
+    )
+    parser.add_argument(
+        "-cs",
+        "--chunk_size",
+        default=0,
+        help="""Chunk size to use in pca_sort and tsne_sort method, by default chunk size"""
+        """will be equal to number of read in the file""",
+    )
+    parser.add_argument(
+        "-cu",
+        "--cutoff",
+        default=0,
+        help="Cutoff to use in kmer_sort method, by default there is no cutoff",
+    )
+    parser.add_argument(
+        "-in",
+        "--intervals_number",
+        default=3,
+        help="Number of intervals to use in the kmer_sort method",
+    )
 
     args = parser.parse_args()
 
@@ -146,5 +186,7 @@ def main():
 if __name__ == "__main__":
     main()
     # Usage :
-    # $ python read_sort.py -i data/ecoli_100Kb_reads_40x.fasta -m pca_sort -cs 40000 -c data/headerless/ecoli_100Kb_reads_40x.fasta.headerless.gz --delete_output True
-    # python read_sort.py -i data/ecoli_100Kb_reads_120x.fasta -m kmer_sort -s 6 -c data/headerless/ecoli_100Kb_reads_120x.fasta.headerless.gz --delete_output True
+    # python read_sort.py -i data/ecoli_100Kb_reads_5x.fasta -m kmer_sort -d T
+    # python read_sort.py -i data/ecoli_100Kb_reads_5x.fasta -m pca_sort -d T
+    # python read_sort.py -i data/ecoli_100Kb_reads_5x.fasta -m tsne_sort -d T
+    # python read_sort.py -i data/ecoli_100Kb_reads_5x.fasta -m chatgpt_sort -d T

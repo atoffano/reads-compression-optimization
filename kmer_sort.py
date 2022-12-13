@@ -51,8 +51,7 @@ def __get_identifier(read: str, kmer: str, intervals: list) -> str:
                 kmer_positions += str(len(intervals))
             else:
                 kmer_positions += str(
-                    [j for j, i in enumerate(intervals) if last_kmer_index - 1 > i][-1]
-                    + 1
+                    [j for j, i in enumerate(intervals) if last_kmer_index >= i][-1] + 1
                 )
 
     # len("") = 0 so if there is no kmer found in the read the identifier is "0"
