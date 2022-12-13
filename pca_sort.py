@@ -7,6 +7,14 @@ from utils import *
 import os
 
 def enum_kmers(k):
+    """Enumerate all possible kmers of length k.
+
+    Args:
+        k (int): [description]
+
+    Returns:
+        list (list): A lit of all possible kmers of length k.
+    """
     if k<0:
         raise ValueError()
     elif k == 0:
@@ -19,6 +27,7 @@ def enum_kmers(k):
     return list
 
 def distribution(list):
+    """Distribute the kmers in the list."""
     adn = ['A','T','C','G']
     res = []
     i = 0
@@ -39,6 +48,7 @@ def sort_by_pca(infile, outfile, chunk_size):
     kmers = enum_kmers(3)
     i = 0
     data = []
+    chunk_size = chunk_size if chunk_size != 0 else len(list(fasta_reader(infile)))
     matrix = np.zeros((chunk_size, len(kmers)), dtype=int)
     for read in fasta_reader(infile):
         sequence = get_sequence(read)
@@ -66,7 +76,7 @@ def pc_sort(i, matrix, data, chunk_size, kmers, outfile):
     return i, data, matrix
 
 if __name__ == "__main__":
-    sort_by_pca(infile='data/ecoli_100Kb_reads_40x.fasta', outfile="out_x.fasta", chunk_size=40000)
+    sort_by_pca(infile='data/ecoli_100Kb_reads_40x.fasta', outfile="out_x.fasta", chunk_size=0)
     print(monitor_gzip("out_x.fasta", 'data/headerless/ecoli_100Kb_reads_40x.fasta.headerless.gz'))
     os.remove("out_x.fasta")
     os.remove("out_x.fasta.gz")

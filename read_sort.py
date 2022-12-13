@@ -24,7 +24,7 @@ def argparser():
     parser.add_argument("-m", "--method", required=True, help="")
     parser.add_argument("-c", "--compare_to")
     parser.add_argument("-s", "--size_kmer", default=6, help="")
-    parser.add_argument("-cs", "--chunk_size", default=1000000, help="")
+    parser.add_argument("-cs", "--chunk_size", default=0, help="")
     parser.add_argument("-cu", "--cutoff", default=0, help="")
     parser.add_argument("-in", "--intervals_number", default=3, help="")
 
@@ -38,7 +38,7 @@ def read_sort_main(
     delete: bool = True,
     method: str = "kmer_sort",
     size: int = 6,
-    chunk_size: int = 1000000,
+    chunk_size: int = 0,
     intervals_number: int = 3,
     cutoff=0,
 ):
