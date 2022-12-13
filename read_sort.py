@@ -1,21 +1,11 @@
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
 import tsne_sort, pca_sort, kmer_sort, chatGPT_sort
 from utils import *
 import time
+from pathlib import Path
 
 
 def argparser():
-    """
-    Parses arguments from command line
-            Parameters:
-                    Console arguments
-                    -i / --infile (str) : infile fasta file with headers
-                    -m / --method (str): Method used to sort reads. Can be 'tsne_sort', 'pca_sort' or 'kmer_sort'
-                    -d / --delete_output (bool) : Delete output file after compression ratio is computed
-                    -c / --compare_to (str) : headerless fasta.gz file to compare to in order to compute compression ratio
-                    -s / --size_kmer (int) : size of kmer used for kmer_sort
-                    -cs / --chunk_size (int) : size of chunk used for tsne_sort and pca_sort
-    """
     parser = ArgumentParser()
 
     # Add the arguments to the parser
@@ -29,6 +19,44 @@ def argparser():
     parser.add_argument("-in", "--intervals_number", default=3, help="")
 
     args = parser.parse_args()
+
+    return argparse_parser(args)
+
+
+def argparse_parser(args: Namespace) -> Namespace:
+    """Reparse the argparse argument
+
+    Args:
+        args (Namespace): argparse arguments
+
+    Raises:
+        ValueError: raise error if -d argument is different than 'T'
+
+    Returns:
+        Namespace: the parsed Namespace instance
+    """
+    args.infile = Path(args.infile)
+    args.compare_to = Path(args.compare_to) if args.compare_to else False
+    if not args.output:
+        args.output = (
+            Path("_organized.".join(args.infile.name.split(".")))
+            if args.infile.name.count(".") == 1
+            else args.infile.name + "_organized"
+        )
+    else:
+        args.output = Path(args.output)
+
+    if args.delete_output == "T":
+        args.delete_output = True
+    elif args.delete_output != False:
+        raise ValueError(
+            "-d / --delete_output arg value must be 'T' (True) or 'F' (False)"
+        )
+    args.size_kmer = int(args.size_kmer)
+    args.chunk_size = int(args.chunk_size)
+    args.cutoff = int(args.cutoff)
+    args.intervals_number = int(args.intervals_number)
+
     return args
 
 
@@ -42,10 +70,14 @@ def read_sort_main(
     intervals_number: int = 3,
     cutoff=0,
 ):
-    log = {}
-    output = "_out.".join(infile.split("."))
-
-    t1 = time.time()
+    log: dict = {}
+    output = (
+        Path("_organized.".join(infile.split(".")))
+        if "." in infile
+        else infile + "_organized"
+    )
+    infile = Path(infile)
+    t1: float = time.time()
 
     if method == "kmer_sort":
         kmer_sort.sort_by_kmer(
@@ -65,42 +97,50 @@ def read_sort_main(
 
     if delete:
         os.remove(output)
-        os.remove(output + ".gz")
+        os.remove(output.name + ".gz")
 
     return log
 
 
 def main():
+    """main function of the script
+
+    Raises:
+        ValueError: raise error if the method provided does not exist
+    """
     args = argparser()
-    args.delete_output = True if args.delete_output == "True" else False
-    output = "_out.".join(args.infile.split("."))
 
     if args.method == "kmer_sort":
-        size = int(args.size_kmer)
-        cutoff = int(args.cutoff)
-        intervals_number = int(args.intervals_number)
         kmer_sort.sort_by_kmer(
             infile=args.infile,
-            output=output,
-            size=size,
-            intervals_number=intervals_number,
-            cutoff=cutoff,
+            output=args.output,
+            size=args.size_kmer,
+            intervals_number=args.intervals_number,
+            cutoff=args.cutoff,
         )
 
-    if args.method == "tsne_sort":
-        tsne_sort.sort_by_tsne(args.infile, output, int(args.chunk_size))
+    elif args.method == "tsne_sort":
+        tsne_sort.sort_by_tsne(args.infile, args.output, args.chunk_size)
 
-    if args.method == "pca_sort":
-        pca_sort.sort_by_pca(args.infile, output, int(args.chunk_size))
+    elif args.method == "pca_sort":
+        pca_sort.sort_by_pca(args.infile, args.output, args.chunk_size)
 
-    if args.method == "chatgpt_sort":
-        chatGPT_sort.sort_by_minimizer(args.infile, output)
+    elif args.method == "chatgpt_sort":
+        chatGPT_sort.sort_by_minimizer(args.infile, args.output)
 
-    print(f"Compression ratio : {monitor_gzip(output, args.compare_to)}")
+    else:
+        raise ValueError(
+            "Method does not exist try 'kmer_sort','pca_sort','tsne_sort', or 'chatgpt_sort'"
+        )
+    if args.compare_to:
+        print(f"Compression ratio : {monitor_gzip(args.output, args.compare_to)}")
 
-    if str(args.delete_output) == "True":
-        os.remove(output)
-        os.remove(output + ".gz")
+    if (
+        args.delete_output
+    ):  # this should only be use to test the performance of the sorting algorithm
+        os.remove(args.output)
+        if args.compare_to:
+            os.remove(args.output.name + ".gz")
 
 
 if __name__ == "__main__":
