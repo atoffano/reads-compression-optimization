@@ -47,11 +47,11 @@ def __get_identifier(read: str, kmer: str, intervals: list) -> str:
             last_kmer_index += move_index
 
             # concatenate str with the relative position of the kmer start
-            if last_kmer_index >= intervals[-1]:
+            if last_kmer_index - 1 >= intervals[-1]:
                 kmer_positions += str(len(intervals))
             else:
                 kmer_positions += str(
-                    [j for j, int in enumerate(intervals) if last_kmer_index > int][-1]
+                    [j for j, i in enumerate(intervals) if last_kmer_index - 1 > i][-1]
                     + 1
                 )
 
