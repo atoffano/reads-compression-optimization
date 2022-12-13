@@ -50,6 +50,7 @@ def sort_by_tsne(infile, outfile, chunk_size):
     kmers = enum_kmers(3)
     i = 0
     data = []
+    chunk_size = chunk_size if chunk_size != 0 else len(list(fasta_reader(infile)))
     matrix = np.zeros((chunk_size, len(kmers)), dtype=int)
     for read in fasta_reader(infile):
         sequence = get_sequence(read)

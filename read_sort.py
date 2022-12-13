@@ -9,61 +9,14 @@ def argparser():
     parser = ArgumentParser()
 
     # Add the arguments to the parser
-    parser.add_argument(
-        "-i",
-        "--infile",
-        required=True,
-        help="Path to source file to reorder",
-    )
-    parser.add_argument(
-        "-o",
-        "--output",
-        default=False,
-        help="""Path to the output file if nothing provide output will """
-        """be generated automatically in the same folder as source file""",
-    )
-    parser.add_argument(
-        "-d",
-        "--delete_output",
-        default=False,
-        help="if set as 'T' (True) the output file will be delete at the end",
-    )
-    parser.add_argument(
-        "-c",
-        "--compare_to",
-        default=False,
-        help="Path to to the file to compare the compressed output size with",
-    )
-    parser.add_argument(
-        "-m",
-        "--method",
-        required=True,
-        help="Method to use for reordering ('kmer_sort', 'pca_sort','tsne_sort',chatgpt_sort'",
-    )
-    parser.add_argument(
-        "-s",
-        "--size_kmer",
-        default=6,
-        help="Size of k-mer use in the 'kmer_sort' method",
-    )
-    parser.add_argument(
-        "-cs",
-        "--chunk_size",
-        default=1000000,
-        help="Size of chunk use in the 'pca_sort' and 'tsne_sort' methods",
-    )
-    parser.add_argument(
-        "-cu",
-        "--cutoff",
-        default=0,
-        help="Cutoff use in the 'kmer_sort' method if cutoff >= 0, no cutoff will be applied",
-    )
-    parser.add_argument(
-        "-in",
-        "--intervals_number",
-        default=3,
-        help="Numbers of intervals use in the 'kmer_sort' method",
-    )
+    parser.add_argument("-i", "--infile", required=False, help="")
+    parser.add_argument("-d", "--delete_output", default="True", help="")
+    parser.add_argument("-m", "--method", required=True, help="")
+    parser.add_argument("-c", "--compare_to")
+    parser.add_argument("-s", "--size_kmer", default=6, help="")
+    parser.add_argument("-cs", "--chunk_size", default=0, help="")
+    parser.add_argument("-cu", "--cutoff", default=0, help="")
+    parser.add_argument("-in", "--intervals_number", default=3, help="")
 
     args = parser.parse_args()
 
@@ -113,7 +66,7 @@ def read_sort_main(
     delete: bool = True,
     method: str = "kmer_sort",
     size: int = 6,
-    chunk_size: int = 1000000,
+    chunk_size: int = 0,
     intervals_number: int = 3,
     cutoff=0,
 ):
