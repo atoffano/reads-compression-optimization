@@ -19,7 +19,7 @@ The functions employed here are based on two main strategies : either a minimize
 |    Speed    | ●●         | ●●●●        |   ●       | ●●        |
 |  RAM Usage  | ●●         | ●●●●        |   ●●●     | ●         |
 
-Chacune des méthodes est classée de ● à ●●●● en fonction de sa performance dans la métrique évaluée.
+Chacune des méthodes est classée entre ● et ●●●● en fonction de sa performance dans la métrique évaluée.
 
 ## Usage
 `$ python read_sort.py --input [input fasta] --method [strategy_name]`
