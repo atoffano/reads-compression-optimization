@@ -1,67 +1,8 @@
 import numpy as np
 from sklearn.decomposition import PCA
-from sklearn.preprocessing import StandardScaler
-from sklearn import manifold
 from utils import *
 from pathlib import Path
 import os
-
-
-def enum_kmers(k):
-    """Enumerate all possible kmers of length k.
-
-    Args:
-        k (int): [description]
-
-    Returns:
-        list (list): A list of all possible kmers of length k.
-    """
-    if k<0:
-        raise ValueError()
-    elif k == 0:
-        return []
-    list = [""]
-    i = 0
-    while i < k:
-        list = distribution(list)
-        i += 1
-    return list
-
-
-def distribution(list):
-    """Distribute the kmers in the list.
-    
-    Args:
-        list (list): A list of kmers.
-
-    Returns:
-        list (list): A list of kmers with all possible kmers of length k.
-    """
-    adn = ['A','T','C','G']
-    res = []
-    i = 0
-    while i < len(list):
-        j = 0
-        while j < 4:
-            sol = list[i] + adn[j]
-            res.append(sol)
-            j += 1
-        i += 1
-    return res
-
-
-def encode_kmers(kmers, sequence):
-    """Encode the kmers in the sequence.
-        
-    Args:
-        kmers (list): List of all kmers of length k.
-        sequence (str): Sequence to encode.
-
-    Returns:
-        list (list): A list of 1s and 0s, 1 if the kmer is in the sequence, 0 otherwise.
-    """
-    return [1 if kmer in sequence else 0 for kmer in kmers]
-
 
 def sort_by_pca(infile: Path, outfile: Path, chunk_size):
     """Sort the reads in the input file by PCA.
@@ -119,6 +60,7 @@ def pc_sort(i, matrix, data, chunk_size, kmers, outfile):
 
 
 if __name__ == "__main__":
+    import os
     sort_by_pca(infile='data/ecoli_100Kb_reads_40x.fasta', outfile="out_x.fasta", chunk_size=0)
     print(monitor_gzip("out_x.fasta", 'data/headerless/ecoli_100Kb_reads_40x.fasta.headerless.gz'))
     os.remove("out_x.fasta")

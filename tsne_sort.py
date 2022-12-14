@@ -1,51 +1,16 @@
-
 import numpy as np
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import pairwise_distances
 from sklearn.manifold import TSNE
-
-from sklearn import manifold
 from utils import *
-import os
-
-def enum_kmers(k):
-    if k<0:
-        raise ValueError()
-    elif k == 0:
-        return []
-    list = ['']
-    i = 0
-    while i<k:
-        list = distribution(list)
-        i+=1
-    return list
-
-def distribution(list):
-    adn = ['A','T','C','G']
-    res = []
-    i = 0
-    while i < len(list):
-        j = 0
-        while j < 4:
-            sol = list[i] + adn[j]
-            res.append(sol)
-            j+=1
-        i+=1
-    return res
-
-def encode_kmers(kmers, sequence):
-    return [1 if kmer in sequence else 0 for kmer in kmers]
-
-def encode_to_kmers(kmers, sequence):
-    encoding = []
-    for i in range(len(sequence) - len(kmers[0]) + 1):
-        kmer = sequence[i:i+len(kmers[0])]
-        if kmer in kmers:
-            encoding.append(kmers.index(kmer))
-    return encoding
 
 @timer_func
 def sort_by_tsne(infile, outfile, chunk_size):
+    """Sort the reads in the input file by t-SNE.
+
+    Args:
+        infile (str): Path to the input file.
+        outfile (str): Path to the output file.
+        chunk_size (int): Number of reads to compute at once using t-SNE. Useful if the file can't hold in memory.
+    """
     #kmer embedding sorting
     kmers = enum_kmers(3)
     i = 0
@@ -63,6 +28,20 @@ def sort_by_tsne(infile, outfile, chunk_size):
         i, data, matrix = ts_sort(i, matrix, data, chunk_size, kmers, outfile)
 
 def ts_sort(i, matrix, data, chunk_size, kmers, outfile):
+    """Compute the t-SNE on the current block of reads, sort and write them to output.
+
+    Args:
+        i (int): Number of reads in the current block.
+        matrix (np.array): Matrix of encoded reads.
+        data (list): List of reads.
+        chunk_size (int): Number of reads to compute at once using t-SNE. Useful if the file can't hold in memory.
+        kmers (list): List of all kmers of length k.
+        outfile (str): Path to the output file.
+
+    Returns:
+        i, data, matrix (tuple): Tuple of the number of reads in the current block, the list of reads and the matrix of encoded reads.
+
+    """
     tsne = TSNE(n_components=1, perplexity=40, n_iter=300, init='pca')
     TS = tsne.fit_transform(matrix)
     for pc, seq, j in zip(TS, data, range(chunk_size)):
@@ -77,7 +56,9 @@ def ts_sort(i, matrix, data, chunk_size, kmers, outfile):
     return i, data, matrix
 
 if __name__ == "__main__":
-    sort_by_tsne(infile='data/ecoli_100Kb_reads_40x.fasta', outfile="out_x.fasta", chunk_size=40000)
-    print(monitor_gzip("out_x.fasta", 'data/headerless/ecoli_100Kb_reads_40x.fasta.headerless.gz'))
-
+    import os
+    sort_by_tsne(infile='data/ecoli_100Kb_reads_10x.fasta', outfile="out_x.fasta", chunk_size=10000)
+    print(monitor_gzip("out_x.fasta", 'data/headerless/ecoli_100Kb_reads_10x.fasta.headerless.gz'))
+    os.remove("out_x.fasta")
+    os.remove("out_x.fasta.gz")
     
