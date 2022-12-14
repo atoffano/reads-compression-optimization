@@ -22,7 +22,7 @@ The functions employed here are based on two main strategies : either a minimize
 Each method is ranked between ● (worst) and ●●●● (best) in different metrics.
 
 ## Basic Usage
-`$ python read_sort.py --input [input fasta] --method [strategy_name]`
+`$ python read_organizer.py --input [input fasta] --method [strategy_name]`
 
 ### Arguments
 `read_organizer.py [-h] -i INPUT [-o OUTPUT] [-m METHOD] [-d DELETE_OUTPUT] [-c COMPARE_TO] [-s SIZE_KMER] [-cs CHUNK_SIZE] [-cu CUTOFF] [-in INTERVALS_NUMBER]`
