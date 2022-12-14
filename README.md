@@ -15,16 +15,36 @@ The functions employed here are based on two main strategies : either a minimize
 
 |             |    Kmer    | Pollinghash |    PCA    |   t-SNE   |
 |-------------|------------|-------------|-----------|-----------|
-| Compression | ●●         | ●●●●        |   ●●      | ●●●●      |
-|    Speed    | ●●         | ●●●●        |   ●       | ●●        |
-|  RAM Usage  | ●●         | ●●●●        |   ●●●     | ●         |
+| Compression | ●●●        | ●●●●        |   ●●      | ●●●●      |
+|    Speed    | ●●         | ●●●         |   ●●●●    | ●         |
+|  RAM Usage  | ●●●●       | ●●●●        |   ●●      | ●         |
 
-Chacune des méthodes est classée entre ● et ●●●● en fonction de sa performance dans la métrique évaluée.
+Each method is ranked between ● (worst) and ●●●● (best) in different metrics.
 
-## Usage
+## Basic Usage
 `$ python read_sort.py --input [input fasta] --method [strategy_name]`
 
 ### Arguments
- --compare_to [.fasta.gz of the input without headers] 
- --chunk_size : 
- --delete_output [True/False] : Whether to delete the output files.
+`read_organizer.py [-h] -i INPUT [-o OUTPUT] [-m METHOD] [-d DELETE_OUTPUT] [-c COMPARE_TO] [-s SIZE_KMER] [-cs CHUNK_SIZE] [-cu CUTOFF] [-in INTERVALS_NUMBER]`
+```
+ -h, --help            
+                        show this help message and exit
+  -i INPUT, --input INPUT
+                        Input file path
+  -o OUTPUT, --output OUTPUT
+                        Output file path, if not provided output will be save in the script file folder
+  -d DELETE_OUTPUT, --delete_output DELETE_OUTPUT
+                        passed 'T' (True) to delete any output after the algorithm. This only should be used to monitor performance
+  -m METHOD, --method METHOD
+                        Method to use between 'tsne_sort', 'pca_sort','kmer_sort','rollinghash_sort'
+  -c COMPARE_TO, --compare_to COMPARE_TO
+                        File path to compare the compressed output file with
+  -s SIZE_KMER, --size_kmer SIZE_KMER
+                        Kmer size to use in kmer_sort method
+  -cs CHUNK_SIZE, --chunk_size CHUNK_SIZE
+                        Chunk size to use in pca_sort and tsne_sort method, by default chunk sizewill be equal to number of read in the file
+  -cu CUTOFF, --cutoff CUTOFF
+                        Cutoff to use in kmer_sort method, by default there is no cutoff
+  -in INTERVALS_NUMBER, --intervals_number INTERVALS_NUMBER
+                        Number of intervals to use in the kmer_sort method
+```
