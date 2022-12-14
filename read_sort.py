@@ -1,5 +1,5 @@
 from argparse import ArgumentParser, Namespace
-import tsne_sort, pca_sort, kmer_sort, chatGPT_sort
+import tsne_sort, pca_sort, kmer_sort, rollinghash_sort
 from utils import *
 import time
 from pathlib import Path
@@ -132,6 +132,9 @@ def read_sort_main(
     elif method == "pca_sort":
         pca_sort.sort_by_pca(infile, output, int(chunk_size))
 
+    elif method == "rollinghash_sort":
+        rollinghash_sort.sort_by_pca(infile, output)
+        
     log["time"] = time.time() - t1
     log["rate"] = monitor_gzip(output, compare_to)
 
@@ -166,7 +169,7 @@ def main():
         pca_sort.sort_by_pca(args.infile, args.output, args.chunk_size)
 
     elif args.method == "chatgpt_sort":
-        chatGPT_sort.sort_by_minimizer(args.infile, args.output)
+        rollinghash_sort.sort_by_minimizer(args.infile, args.output)
 
     else:
         raise ValueError(
