@@ -6,6 +6,9 @@ from pathlib import Path
 
 
 def argparser():
+    """Parse the arguments passed to the script"""
+
+    # Create the parser
     parser = ArgumentParser()
 
     # Add the arguments to the parser
@@ -27,7 +30,7 @@ def argparser():
         "-m",
         "--method",
         required=True,
-        help="Method to use between 'tsne_sort', 'pca_sort','kmer_sort','chatgpt_sort'",
+        help="Method to use between 'tsne_sort', 'pca_sort','kmer_sort','rollinghash_sort'",
     )
     parser.add_argument(
         "-c",
@@ -99,54 +102,8 @@ def argparse_parser(args: Namespace) -> Namespace:
 
     return args
 
-
-def read_sort_main(
-    infile: Path,
-    compare_to: Path,
-    delete: bool = True,
-    method: str = "kmer_sort",
-    size: int = 6,
-    chunk_size: int = 0,
-    intervals_number: int = 3,
-    cutoff=0,
-):
-    log: dict = {}
-    output = (
-        Path("_organized.".join(infile.split(".")))
-        if "." in infile
-        else infile + "_organized"
-    )
-    infile = Path(infile)
-    t1: float = time.time()
-
-    if method == "kmer_sort":
-        kmer_sort.sort_by_kmer(
-            infile=infile,
-            output=output,
-            size=size,
-            intervals_number=intervals_number,
-            cutoff=cutoff,
-        )
-    elif method == "tsne_sort":
-        tsne_sort.sort_by_tsne(infile, output, int(chunk_size))
-    elif method == "pca_sort":
-        pca_sort.sort_by_pca(infile, output, int(chunk_size))
-
-    elif method == "rollinghash_sort":
-        rollinghash_sort.sort_by_pca(infile, output)
-        
-    log["time"] = time.time() - t1
-    log["rate"] = monitor_gzip(output, compare_to)
-
-    if delete:
-        os.remove(output)
-        os.remove(output.name + ".gz")
-
-    return log
-
-
 def main():
-    """main function of the script
+    """Main function of the script. Calls the argument parser, then call the sorting algorithm.
 
     Raises:
         ValueError: raise error if the method provided does not exist
