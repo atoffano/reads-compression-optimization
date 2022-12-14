@@ -12,7 +12,7 @@ def argparser():
     parser = ArgumentParser()
 
     # Add the arguments to the parser
-    parser.add_argument("-i", "--infile", required=True, help="Input file path")
+    parser.add_argument("-i", "--input", required=True, help="Input file path")
     parser.add_argument(
         "-o",
         "--output",
@@ -60,7 +60,6 @@ def argparser():
         default=3,
         help="Number of intervals to use in the kmer_sort method",
     )
-
     args = parser.parse_args()
 
     return argparse_parser(args)
@@ -78,20 +77,20 @@ def argparse_parser(args: Namespace) -> Namespace:
     Returns:
         Namespace: the parsed Namespace instance
     """
-    args.infile = Path(args.infile)
+    args.input = Path(args.input)
     args.compare_to = Path(args.compare_to) if args.compare_to else False
     if not args.output:
         args.output = (
-            Path("_organized.".join(args.infile.name.split(".")))
-            if args.infile.name.count(".") == 1
-            else args.infile.name + "_organized"
+            Path("_organized.".join(args.input.name.split(".")))
+            if args.input.name.count(".") == 1
+            else args.input.name + "_organized"
         )
     else:
         args.output = Path(args.output)
 
-    if args.delete_output == "T":
+    if args.delete_output == "T" or args.delete_output == "True":
         args.delete_output = True
-    elif args.delete_output != False:
+    elif args.delete_output != "F" or args.delete_output != "False":
         raise ValueError(
             "-d / --delete_output arg value must be 'T' (True) or 'F' (False)"
         )
@@ -112,7 +111,7 @@ def main():
 
     if args.method == "kmer_sort":
         kmer_sort.sort_by_kmer(
-            infile=args.infile,
+            input=args.input,
             output=args.output,
             size=args.size_kmer,
             intervals_number=args.intervals_number,
@@ -120,17 +119,17 @@ def main():
         )
 
     elif args.method == "tsne_sort":
-        tsne_sort.sort_by_tsne(args.infile, args.output, args.chunk_size)
+        tsne_sort.sort_by_tsne(args.input, args.output, args.chunk_size)
 
     elif args.method == "pca_sort":
-        pca_sort.sort_by_pca(args.infile, args.output, args.chunk_size)
+        pca_sort.sort_by_pca(args.input, args.output, args.chunk_size)
 
-    elif args.method == "chatgpt_sort":
-        rollinghash_sort.sort_by_minimizer(args.infile, args.output)
+    elif args.method == "rollinghash_sort":
+        rollinghash_sort.sort_by_minimizer(args.input, args.output)
 
     else:
         raise ValueError(
-            "Method does not exist try 'kmer_sort','pca_sort','tsne_sort', or 'chatgpt_sort'"
+            "Method does not exist try 'kmer_sort','pca_sort','tsne_sort', or 'rollinghash_sort'"
         )
     if args.compare_to:
         print(f"Compression ratio : {monitor_gzip(args.output, args.compare_to)}")
