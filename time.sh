@@ -1,4 +1,0 @@
-python read_sort.py --input data/ecoli_100Kb_reads_5x.fasta --method pca_sort --delete_output True --compare_to data/headerless/ecoli_100Kb_reads_5x.fasta.headerless.gz
-python read_sort.py --input data/ecoli_100Kb_reads_5x.fasta --method tsne_sort --delete_output True --compare_to data/headerless/ecoli_100Kb_reads_5x.fasta.headerless.gz
-python read_sort.py --input data/ecoli_100Kb_reads_5x.fasta --method rollinghash_sort --delete_output True --compare_to data/headerless/ecoli_100Kb_reads_5x.fasta.headerless.gz
-python read_sort.py --input data/ecoli_100Kb_reads_5x.fasta --method kmer_sort --delete_output True --compare_to data/headerless/ecoli_100Kb_reads_5x.fasta.headerless.gz
