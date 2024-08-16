@@ -48,3 +48,23 @@ Each method is ranked between ● (worst) and ●●●● (best) in different m
   -in INTERVALS_NUMBER, --intervals_number INTERVALS_NUMBER
                         Number of intervals to use in the kmer_sort method
 ```
+
+## Results
+Method performance was assessed on read from human, E.coli and mixed species for different number of reads in order to assess scalability.
+
+### k-mer
+<img width="497" alt="image" src="https://github.com/user-attachments/assets/827de1db-6bff-46f5-af31-087cd81bc703">  
+
+k-mer size was set to 6, with 3 as position interval and without cutoff according to the following experiments:  
+
+<img width="465" alt="image" src="https://github.com/user-attachments/assets/ec01a78c-0f9f-4211-b576-2d188274ef88">
+
+<img width="452" alt="image" src="https://github.com/user-attachments/assets/bf2752f3-4ebf-4796-b6a2-95cde9256f00">
+
+### PCA / t-sne
+<img width="362" alt="image" src="https://github.com/user-attachments/assets/864459cd-aa4c-4a0c-8b5a-c9ce9f2edab5">
+
+### RollingHash
+<img width="422" alt="image" src="https://github.com/user-attachments/assets/3df683ee-b092-4a78-ae51-a562ccb5a7e9">
+
+
