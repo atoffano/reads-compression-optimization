@@ -13,7 +13,7 @@ The functions employed here are based on two main strategies : either a minimize
 - `pca_sort` : A function that uses PCA in order to assert their similarity to each other.
 - `tsne_sort` : Works quite like pca_sort, but with far better results and far worse execution time.
 
-|             |    Kmer    | Pollinghash |    PCA    |   t-SNE   |
+|             |    Kmer    | Rollinghash |    PCA    |   t-SNE   |
 |-------------|------------|-------------|-----------|-----------|
 | Compression | ●●●        | ●●●●        |   ●●      | ●●●●      |
 |    Speed    | ●●         | ●●●         |   ●●●●    | ●         |
